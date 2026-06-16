@@ -301,11 +301,13 @@
     <div class="sidebar-section">
       <div class="sidebar-label">KI-QUELLE</div>
       <select class="inp" id="modelSource" onchange="toggleModelSource()">
-        <option value="gemini">Gemini (Cloud)</option>
-        <option value="ollama">Ollama (Lokal)</option>
+        <option value="hybrid">Hybrid (Auto-Fallback)</option>
+        <option value="gemini">Gemini (Nur Cloud)</option>
+        <option value="ollama">Ollama (Nur Lokal)</option>
       </select>
-      <div id="ollamaConfig" style="display:none; margin-top:12px">
-        <input type="text" class="inp" id="ollamaModel" placeholder="Modell (z.B. llama3)" value="llama3" />
+      <div id="ollamaConfig" style="margin-top:12px">
+        <div class="sidebar-label" style="font-size:0.6rem; margin-bottom:8px">OLLAMA MODELLE (Prio-Liste)</div>
+        <input type="text" class="inp" id="ollamaModel" placeholder="qwen2, llama3, mistral" value="qwen2, llama3" title="Komma-getrennte Liste der installierten Modelle" />
       </div>
     </div>
     <div class="sidebar-section">
@@ -361,7 +363,8 @@
 </div>
 
 <div class="toast" id="toast"></div>
-<div style="position:fixed; bottom:10px; right:10px; font-size:0.6rem; color:var(--text-muted); pointer-events:none">v1.4.1</div>
+<div style="position:fixed; bottom:10px; right:10px; font-size:0.6rem; color:var(--text-muted); pointer-events:none">v1.5</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 <script>
@@ -479,7 +482,8 @@ function removeDoc(id, e) {
 // ══════════════════════════════════════════════════════════════
 function toggleModelSource() {
   const src = document.getElementById('modelSource').value;
-  document.getElementById('ollamaConfig').style.display = (src === 'ollama' ? 'block' : 'none');
+  // Ollama Config immer zeigen bei Hybrid oder Ollama
+  document.getElementById('ollamaConfig').style.display = (src === 'gemini' ? 'none' : 'block');
 }
 
 async function sendText(text) {
@@ -494,49 +498,72 @@ async function sendText(text) {
     let system = 'Du bist ein professioneller Vertriebs-Assistent. Antworte präzise auf Deutsch.';
     if (activeDoc) system += `\n\nDokument: ${activeDoc.content.substring(0, 7000)}`;
     
-    if (source === 'gemini') {
-      history.push({ role: 'user', parts: [{ text }] });
-      const trimmed = history.slice(-12);
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ system_instruction: { parts: [{ text: system }] }, contents: trimmed })
-      });
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(`Google API sagt (${errData.error?.status || res.status}): ${errData.error?.message}`);
+    // Versuch 1: Gemini (falls Hybrid oder Gemini gewählt)
+    if (source === 'hybrid' || source === 'gemini') {
+      try {
+        const reply = await callGemini(text, system);
+        handleReply(reply, typingId, 'gemini');
+        return;
+      } catch(e) {
+        if (source === 'gemini') throw e; 
+        console.warn('Gemini fehlgeschlagen, wechsle zu Ollama...', e);
+        showToast('Gemini Limit ⏳ - Wechsle zu Lokal...');
       }
-      const data = await res.json();
-      const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Keine Antwort.';
-      handleReply(reply, typingId, source);
-    } else {
-      // OLLAMA LOGIC
-      const model = document.getElementById('ollamaModel').value || 'llama3';
-      const res = await fetch('http://localhost:11434/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: model,
-          messages: [
-            { role: 'system', content: system },
-            { role: 'user', content: text }
-          ],
-          stream: false
-        })
-      });
-      if (!res.ok) throw new Error('Ollama nicht erreichbar. Hast du OLLAMA_ORIGINS="*" gesetzt?');
-      const data = await res.json();
-      handleReply(data.message.content, typingId, source);
     }
+
+    // Versuch 2: Ollama (falls Hybrid Fallback oder Ollama gewählt)
+    const models = document.getElementById('ollamaModel').value.split(',').map(m => m.trim());
+    for (const m of models) {
+      try {
+        const reply = await callOllama(text, system, m);
+        handleReply(reply, typingId, 'ollama');
+        return;
+      } catch(e) {
+        console.error(`Ollama Modell ${m} fehlgeschlagen:`, e);
+      }
+    }
+    throw new Error('Kein Modell (Cloud oder Lokal) konnte antworten. Prüfe deine Verbindung und ob Ollama läuft.');
+
   } catch(e) {
     removeTyping(typingId);
     addBubble('❌ Fehler: ' + e.message, 'agent');
   }
 }
 
-function handleReply(reply, typingId, source) {
+async function callGemini(text, system) {
+  history.push({ role: 'user', parts: [{ text }] });
+  const trimmed = history.slice(-12);
+  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ system_instruction: { parts: [{ text: system }] }, contents: trimmed })
+  });
+  if (!res.ok) {
+    const errData = await res.json().catch(() => ({}));
+    throw new Error(errData.error?.message || 'Gemini Fehler');
+  }
+  const data = await res.json();
+  return data.candidates?.[0]?.content?.parts?.[0]?.text || 'Keine Antwort.';
+}
+
+async function callOllama(text, system, model) {
+  const res = await fetch('http://localhost:11434/api/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: model,
+      messages: [{ role: 'system', content: system }, { role: 'user', content: text }],
+      stream: false
+    })
+  });
+  if (!res.ok) throw new Error('Ollama offline');
+  const data = await res.json();
+  return data.message.content;
+}
+
+function handleReply(reply, typingId, actualSource) {
   removeTyping(typingId);
   addBubble(reply, 'agent');
-  history.push({ role: source === 'gemini' ? 'model' : 'assistant', parts: [{ text: reply }] });
+  history.push({ role: actualSource === 'gemini' ? 'model' : 'assistant', parts: [{ text: reply }] });
   speakText(reply);
 }
 
