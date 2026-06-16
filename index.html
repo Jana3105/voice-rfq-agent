@@ -351,8 +351,7 @@
 </div>
 
 <div class="toast" id="toast"></div>
-<div style="position:fixed; bottom:10px; right:10px; font-size:0.6rem; color:var(--text-muted); pointer-events:none">v1.2</div>
-
+<div style="position:fixed; bottom:10px; right:10px; font-size:0.6rem; color:var(--text-muted); pointer-events:none">v1.3</div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 <script>
@@ -488,7 +487,9 @@ async function sendText(text) {
 
     if (!res.ok) {
       const errData = await res.json().catch(() => ({}));
-      throw new Error(`Status ${res.status}: ${errData.error?.message || 'Unbekannter Fehler'}`);
+      const msg = errData.error?.message || 'Unbekannter API Fehler';
+      const reason = errData.error?.status || res.status;
+      throw new Error(`Google API sagt (${reason}): ${msg}`);
     }
     
     const data = await res.json();
