@@ -1,0 +1,35 @@
+RFQ - ANFRAGE NR. 2026-0042
+Projekt: Modernisierung Fertigungslinie 4
+Datum: 16. Juni 2026
+
+Sehr geehrte Damen und Herren,
+
+wir bitten um ein Angebot für folgende Komponenten für unsere neue automatisierte Fertigungsstraße am Standort München:
+
+1. POSITION: Industriemotor XM-500
+   Menge: 12 Stück
+   Spezifikationen: 500kW, IP65 Schutzklasse, inklusive Montageflansch.
+
+2. POSITION: Steuerungseinheit CTRL-X
+   Menge: 4 Stück
+   Spezifikationen: Kompatibel mit Industriestandard 4.0, Modbus-Schnittstelle erforderlich.
+
+3. POSITION: Wartungspaket Gold
+   Laufzeit: 24 Monate ab Inbetriebnahme.
+
+LIEFERBEDINGUNGEN:
+- Lieferung bis spätestens 15. September 2026.
+- Frei Haus (DDP München).
+
+ZAHLUNGSBEDINGUNGEN:
+- 30 Tage netto nach Erhalt der Ware und Rechnung.
+- Wir fordern eine Gewährleistung von 36 Monaten auf alle elektronischen Teile.
+
+Besondere Anforderungen:
+Die Dokumentation muss in deutscher und englischer Sprache beigefügt werden. Bitte bestätigen Sie die Einhaltung der ISO 9001 Standards.
+
+Wir erwarten Ihr Angebot bis zum 30. Juni 2026.
+
+Mit freundlichen Grüßen,
+Max Mustermann
+Einkaufsleitung, TechCore GmbH
