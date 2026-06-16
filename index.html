@@ -332,6 +332,14 @@
       </div>
     </div>
     <div class="sidebar-section">
+      <div class="sidebar-label">STIMME & AUDIO</div>
+      <select class="inp" id="voiceSelect" style="font-size:0.75rem; margin-bottom:8px"></select>
+      <div style="display:flex; flex-direction:column; gap:8px">
+        <div style="display:flex; justify-content:space-between; font-size:0.7rem"><span>Tempo</span><span id="rateVal">1.0</span></div>
+        <input type="range" min="0.5" max="2" step="0.1" value="1.0" class="inp" style="padding:0" id="rateRange" oninput="updateSpeechParams()">
+      </div>
+    </div>
+    <div class="sidebar-section">
       <div class="sidebar-label">DOKUMENTE</div>
       <div class="upload-zone" id="uploadZone">
         <input type="file" id="fileInput" multiple onchange="handleFiles(this.files)" style="display:none" />
@@ -381,8 +389,7 @@
 </div>
 
 <div class="toast" id="toast"></div>
-<div style="position:fixed; bottom:10px; right:10px; font-size:0.6rem; color:var(--text-muted); pointer-events:none">v1.7 (Pro-Driver Update)</div>
-
+<div style="position:fixed; bottom:10px; right:10px; font-size:0.6rem; color:var(--text-muted); pointer-events:none">v1.8 (Natural Voice Update)</div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 <script>
@@ -400,6 +407,8 @@ let recognition = null;
 let wakeRec = null;
 let msgCount = 0;
 let isDark = localStorage.getItem('vrfq_dark') === 'true';
+
+let voices = [];
 
 (function init() {
   if (isDark) document.body.classList.add('dark');
@@ -420,12 +429,36 @@ let isDark = localStorage.getItem('vrfq_dark') === 'true';
 
   setupRecognition();
   
+  // Sprach-Initialisierung
+  if (window.speechSynthesis) {
+    window.speechSynthesis.onvoiceschanged = populateVoices;
+    populateVoices();
+  }
+
   // Drag & Drop
   const zone = document.getElementById('uploadZone');
   zone.addEventListener('dragover', e => { e.preventDefault(); zone.style.borderColor = 'var(--accent)'; });
   zone.addEventListener('dragleave', () => zone.style.borderColor = 'var(--border)');
   zone.addEventListener('drop', e => { e.preventDefault(); zone.style.borderColor = 'var(--border)'; handleFiles(e.dataTransfer.files); });
 })();
+
+function populateVoices() {
+  voices = window.speechSynthesis.getVoices().filter(v => v.lang.startsWith('de'));
+  const select = document.getElementById('voiceSelect');
+  if (!select) return;
+  select.innerHTML = '';
+  voices.forEach((v, i) => {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = v.name + (v.localService ? ' (Lokal)' : '');
+    if (v.name.includes('Google') || v.name.includes('Premium') || v.name.includes('Siri')) opt.selected = true;
+    select.appendChild(opt);
+  });
+}
+
+function updateSpeechParams() {
+  document.getElementById('rateVal').textContent = document.getElementById('rateRange').value;
+}
 
 function toggleDarkMode() {
   isDark = !isDark;
@@ -654,12 +687,23 @@ function speakText(t) {
   if (!window.speechSynthesis) return;
   window.speechSynthesis.cancel();
   isSpeaking = true;
+
   const text = t.replace(/[*#]/g, '');
-  const chunks = text.match(/.{1,200}(\s|$)/g) || [text];
+  // Intelligentere Stückelung: Bei Satzzeichen trennen
+  const chunks = text.match(/[^.!?]+[.!?]+|[^.!?]+/g) || [text];
+  
+  const selectedVoiceIndex = document.getElementById('voiceSelect').value;
+  const rate = parseFloat(document.getElementById('rateRange').value) || 1.0;
+
   chunks.forEach((chunk, i) => {
-    const u = new SpeechSynthesisUtterance(chunk);
+    const u = new SpeechSynthesisUtterance(chunk.trim());
     u.lang = 'de-DE';
-    if (i === chunks.length - 1) u.onend = () => { isSpeaking = false; };
+    u.rate = rate;
+    if (voices[selectedVoiceIndex]) u.voice = voices[selectedVoiceIndex];
+    
+    if (i === chunks.length - 1) {
+      u.onend = () => { isSpeaking = false; };
+    }
     window.speechSynthesis.speak(u);
   });
 }
