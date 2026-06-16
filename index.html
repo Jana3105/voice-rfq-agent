@@ -299,6 +299,16 @@
 
   <aside class="sidebar">
     <div class="sidebar-section">
+      <div class="sidebar-label">KI-QUELLE</div>
+      <select class="inp" id="modelSource" onchange="toggleModelSource()">
+        <option value="gemini">Gemini (Cloud)</option>
+        <option value="ollama">Ollama (Lokal)</option>
+      </select>
+      <div id="ollamaConfig" style="display:none; margin-top:12px">
+        <input type="text" class="inp" id="ollamaModel" placeholder="Modell (z.B. llama3)" value="llama3" />
+      </div>
+    </div>
+    <div class="sidebar-section">
       <div class="sidebar-label">API ZUGANG <span onclick="openModal()" style="cursor:pointer">❓</span></div>
       <div class="api-row">
         <input type="password" class="inp" id="apiKeyInput" placeholder="AQ... oder AIza..." />
@@ -351,7 +361,8 @@
 </div>
 
 <div class="toast" id="toast"></div>
-<div style="position:fixed; bottom:10px; right:10px; font-size:0.6rem; color:var(--text-muted); pointer-events:none">v1.3</div>
+<div style="position:fixed; bottom:10px; right:10px; font-size:0.6rem; color:var(--text-muted); pointer-events:none">v1.4</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 <script>
@@ -467,48 +478,67 @@ function removeDoc(id, e) {
 // ══════════════════════════════════════════════════════════════
 // GEMINI API
 // ══════════════════════════════════════════════════════════════
+function toggleModelSource() {
+  const src = document.getElementById('modelSource').value;
+  document.getElementById('ollamaConfig').style.display = (src === 'ollama' ? 'block' : 'none');
+}
+
 async function sendText(text) {
-  if (!text.trim() || !apiKey) { if(!apiKey) showToast('Bitte API Key eingeben!', 'error'); return; }
+  const source = document.getElementById('modelSource').value;
+  if (source === 'gemini' && (!text.trim() || !apiKey)) { if(!apiKey) showToast('Bitte API Key eingeben!', 'error'); return; }
+  
   addBubble(text, 'user');
   const typingId = showTyping();
+  
   try {
     const activeDoc = docs.find(d => d.id == activeDocId);
     let system = 'Du bist ein professioneller Vertriebs-Assistent. Antworte präzise auf Deutsch.';
     if (activeDoc) system += `\n\nDokument: ${activeDoc.content.substring(0, 7000)}`;
     
-    history.push({ role: 'user', parts: [{ text }] });
-    const trimmed = history.slice(-12);
-
-    // Zurück auf gemini-2.0-flash
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ system_instruction: { parts: [{ text: system }] }, contents: trimmed })
-    });
-
-    if (!res.ok) {
-      const errData = await res.json().catch(() => ({}));
-      const msg = errData.error?.message || 'Unbekannter API Fehler';
-      const reason = errData.error?.status || res.status;
-      throw new Error(`Google API sagt (${reason}): ${msg}`);
-    }
-    
-    const data = await res.json();
-    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Keine Antwort erhalten.';
-    removeTyping(typingId);
-    addBubble(reply, 'agent');
-    history.push({ role: 'model', parts: [{ text: reply }] });
-    speakText(reply);
-  } catch(e) {
-    console.error(e);
-    removeTyping(typingId);
-    if (e.message.includes('429')) {
-      addBubble('⏳ Das Gratis-Limit von Google ist erreicht (oder der neue Key ist noch nicht aktiv). Bitte 1 Minute warten.', 'agent');
-    } else if (e.message.includes('401') || e.message.includes('403')) {
-      addBubble('🔑 API Key ungültig oder nicht berechtigt. Bitte Key prüfen.', 'agent');
+    if (source === 'gemini') {
+      history.push({ role: 'user', parts: [{ text }] });
+      const trimmed = history.slice(-12);
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ system_instruction: { parts: [{ text: system }] }, contents: trimmed })
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(`Google API sagt (${errData.error?.status || res.status}): ${errData.error?.message}`);
+      }
+      const data = await res.json();
+      const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Keine Antwort.';
+      handleReply(reply, typingId);
     } else {
-      addBubble('❌ Fehler: ' + e.message, 'agent');
+      // OLLAMA LOGIC
+      const model = document.getElementById('ollamaModel').value || 'llama3';
+      const res = await fetch('http://localhost:11434/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: model,
+          messages: [
+            { role: 'system', content: system },
+            { role: 'user', content: text }
+          ],
+          stream: false
+        })
+      });
+      if (!res.ok) throw new Error('Ollama nicht erreichbar. Hast du OLLAMA_ORIGINS="*" gesetzt?');
+      const data = await res.json();
+      handleReply(data.message.content, typingId);
     }
+  } catch(e) {
+    removeTyping(typingId);
+    addBubble('❌ Fehler: ' + e.message, 'agent');
   }
+}
+
+function handleReply(reply, typingId) {
+  removeTyping(typingId);
+  addBubble(reply, 'agent');
+  history.push({ role: source === 'gemini' ? 'model' : 'assistant', parts: [{ text: reply }] });
+  speakText(reply);
 }
 
 function sendFromInput() {
