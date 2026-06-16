@@ -580,6 +580,22 @@ function exportSession() {
   const blob = new Blob([txt], {type: 'text/plain'});
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'export.txt'; a.click();
 }
+
+async function loadSample() {
+  showToast('Lade Beispiel...');
+  try {
+    const res = await fetch('beispiel_rfq.txt');
+    if (!res.ok) throw new Error();
+    const text = await res.text();
+    const id = 'sample-' + Date.now();
+    docs.push({ id, name: 'beispiel_rfq.txt', content: text });
+    renderDocs();
+    setActiveDoc(id);
+    showToast('Beispiel geladen! ✨');
+  } catch(e) {
+    showToast('Fehler beim Laden des Beispiels', 'error');
+  }
+}
 </script>
 </body>
 </html>
