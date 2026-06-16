@@ -335,6 +335,10 @@
     <div class="doc-banner" id="docBanner">
       <span>📋 Kein Dokument aktiv</span>
     </div>
+    <div style="padding: 10px 32px; display: flex; gap: 10px; background: var(--surface); border-bottom: 1px solid var(--border)">
+        <button class="btn btn-primary" onclick="readActiveDoc()" style="flex:1; justify-content:center; padding: 15px">🔊 Dokument vorlesen</button>
+        <button class="btn btn-ghost" onclick="window.speechSynthesis.cancel()" style="padding: 15px">🛑 Stop</button>
+    </div>
     <div class="chat-window" id="chatWindow">
       <div class="msg-row agent">
         <div class="avatar agent-av">🤖</div>
@@ -363,8 +367,7 @@
 </div>
 
 <div class="toast" id="toast"></div>
-<div style="position:fixed; bottom:10px; right:10px; font-size:0.6rem; color:var(--text-muted); pointer-events:none">v1.5</div>
-
+<div style="position:fixed; bottom:10px; right:10px; font-size:0.6rem; color:var(--text-muted); pointer-events:none">v1.6 (Driving Edition)</div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 <script>
@@ -604,6 +607,7 @@ function toggleWakeWord() {
     wakeRec.onresult = e => {
       const t = e.results[e.results.length-1][0].transcript.toLowerCase();
       if (t.includes('hey agent')) { showToast('🎙️ Höre zu...'); toggleMic(); }
+      if (t.includes('lies') || t.includes('vorlesen')) { readActiveDoc(); }
     };
     wakeRec.start(); wakeActive = true; document.getElementById('wakeBadge').classList.add('active');
   }
@@ -611,8 +615,24 @@ function toggleWakeWord() {
 
 function speakText(t) {
   if (!window.speechSynthesis) return;
-  const u = new SpeechSynthesisUtterance(t.replace(/[*#]/g, '').substring(0, 400));
-  u.lang = 'de-DE'; window.speechSynthesis.speak(u);
+  window.speechSynthesis.cancel(); // Vorherige Stoppen
+  
+  const text = t.replace(/[*#]/g, '');
+  const chunks = text.match(/.{1,200}(\s|$)/g) || [text]; // In kleine Häppchen teilen für flüssiges Lesen
+  
+  chunks.forEach(chunk => {
+    const u = new SpeechSynthesisUtterance(chunk);
+    u.lang = 'de-DE';
+    u.rate = 1.0;
+    window.speechSynthesis.speak(u);
+  });
+}
+
+function readActiveDoc() {
+  const d = docs.find(x => x.id == activeDocId);
+  if (!d) { showToast('Kein Dokument zum Vorlesen!', 'error'); return; }
+  showToast('Lese Dokument vor...');
+  speakText(`Ich lese das Dokument ${d.name} vor: ` + d.content);
 }
 
 function addBubble(text, role) {
