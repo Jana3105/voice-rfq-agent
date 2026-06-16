@@ -389,8 +389,7 @@
 </div>
 
 <div class="toast" id="toast"></div>
-<div style="position:fixed; bottom:10px; right:10px; font-size:0.6rem; color:var(--text-muted); pointer-events:none">v1.9 (Human Pacing)</div>
-
+<div style="position:fixed; bottom:10px; right:10px; font-size:0.6rem; color:var(--text-muted); pointer-events:none">v2.0 (Elite Voice Edition)</div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 <script>
@@ -446,19 +445,21 @@ let voices = [];
 function populateVoices() {
   const allVoices = window.speechSynthesis.getVoices();
   voices = allVoices.filter(v => v.lang.startsWith('de'));
-  
   const select = document.getElementById('voiceSelect');
   if (!select) return;
   select.innerHTML = '';
-  
   let bestIndex = 0;
+  let maxScore = -1;
   voices.forEach((v, i) => {
+    let score = 0;
     const opt = document.createElement('option');
     opt.value = i;
-    opt.textContent = v.name + (v.localService ? ' (Lokal)' : '');
-    if (v.name.includes('Siri') || v.name.includes('Enhanced') || v.name.includes('Erweitert') || v.name.includes('Premium')) {
-      bestIndex = i;
-    }
+    opt.textContent = v.name + (v.localService ? ' (Lokal)' : ' (Cloud)');
+    if (v.name.includes('Google')) score += 100;
+    if (v.name.includes('Siri')) score += 90;
+    if (v.name.includes('Enhanced') || v.name.includes('Erweitert')) score += 80;
+    if (v.name.includes('Premium')) score += 70;
+    if (score > maxScore) { maxScore = score; bestIndex = i; }
     select.appendChild(opt);
   });
   select.value = bestIndex;
@@ -695,25 +696,19 @@ function speakText(t) {
   if (!window.speechSynthesis) return;
   window.speechSynthesis.cancel();
   isSpeaking = true;
-
-  const text = t.replace(/[*#]/g, '').replace(/([,;])/g, '$1 ');
-  const chunks = text.match(/[^.!?]+[.!?]+|[^.!?]+/g) || [text];
-  
+  let text = t.replace(/[*#]/g, '').trim();
   const selectedVoiceIndex = document.getElementById('voiceSelect').value;
+  const voice = voices[selectedVoiceIndex];
   const rate = parseFloat(document.getElementById('rateRange').value) || 0.95;
 
-  chunks.forEach((chunk, i) => {
-    const u = new SpeechSynthesisUtterance(chunk.trim());
-    u.lang = 'de-DE';
-    u.rate = rate;
-    u.pitch = 1.0;
-    if (voices[selectedVoiceIndex]) u.voice = voices[selectedVoiceIndex];
-    
-    if (i === chunks.length - 1) {
-      u.onend = () => { isSpeaking = false; };
-    }
-    window.speechSynthesis.speak(u);
-  });
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = 'de-DE';
+  utterance.rate = rate;
+  utterance.pitch = 1.0;
+  if (voice) utterance.voice = voice;
+  utterance.onend = () => { isSpeaking = false; };
+  utterance.onerror = () => { isSpeaking = false; };
+  window.speechSynthesis.speak(utterance);
 }
 
 function readActiveDoc() {
