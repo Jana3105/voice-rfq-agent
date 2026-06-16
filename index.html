@@ -389,7 +389,8 @@
 </div>
 
 <div class="toast" id="toast"></div>
-<div style="position:fixed; bottom:10px; right:10px; font-size:0.6rem; color:var(--text-muted); pointer-events:none">v2.0 (Elite Voice Edition)</div>
+<div style="position:fixed; bottom:10px; right:10px; font-size:0.6rem; color:var(--text-muted); pointer-events:none">v2.1 (Mobile Cloud Voice)</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 <script>
@@ -452,13 +453,14 @@ function populateVoices() {
   let maxScore = -1;
   voices.forEach((v, i) => {
     let score = 0;
+    const isCloud = !v.localService;
     const opt = document.createElement('option');
     opt.value = i;
-    opt.textContent = v.name + (v.localService ? ' (Lokal)' : ' (Cloud)');
+    opt.textContent = v.name + (isCloud ? ' (Cloud ☁️)' : ' (Lokal)');
+    if (isCloud) score += 200;
     if (v.name.includes('Google')) score += 100;
-    if (v.name.includes('Siri')) score += 90;
+    if (v.name.includes('Siri')) score += 150;
     if (v.name.includes('Enhanced') || v.name.includes('Erweitert')) score += 80;
-    if (v.name.includes('Premium')) score += 70;
     if (score > maxScore) { maxScore = score; bestIndex = i; }
     select.appendChild(opt);
   });
