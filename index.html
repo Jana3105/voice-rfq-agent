@@ -27,6 +27,18 @@
       --radius-sm: 12px;
       --shadow: 0 4px 20px -2px rgba(0,0,0,0.05), 0 2px 10px -2px rgba(0,0,0,0.03);
     }
+    
+    body.dark {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface2: #334155;
+      --surface3: #475569;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: rgba(255,255,255,0.06);
+      --shadow: 0 4px 20px -2px rgba(0,0,0,0.3);
+    }
+
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: 'Inter', sans-serif;
@@ -36,6 +48,7 @@
       overflow-x: hidden;
       display: flex;
       justify-content: center;
+      transition: background 0.3s, color 0.3s;
     }
 
     /* ── Layout ── */
@@ -57,7 +70,7 @@
       display: flex; align-items: center; justify-content: space-between;
       padding: 0 32px;
       border-bottom: 1px solid var(--border);
-      background: rgba(255,255,255,0.8);
+      background: var(--surface);
       backdrop-filter: blur(12px);
       z-index: 100;
     }
@@ -142,7 +155,7 @@
       font-size: 0.85rem; font-weight: 500;
     }
     .doc-tab:hover { background: var(--surface2); }
-    .doc-tab.active { background: white; border-color: var(--accent); box-shadow: var(--shadow); }
+    .doc-tab.active { background: var(--surface); border-color: var(--accent); box-shadow: var(--shadow); }
     .doc-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); }
     .doc-remove { color: var(--text-muted); opacity: 0; transition: opacity 0.2s; cursor: pointer; }
     .doc-tab:hover .doc-remove { opacity: 1; }
@@ -176,11 +189,11 @@
       font-size: 1.2rem; flex-shrink: 0; box-shadow: var(--shadow);
     }
     .avatar.user-av { background: var(--accent); color: white; }
-    .avatar.agent-av { background: white; border: 1px solid var(--border); }
+    .avatar.agent-av { background: var(--surface); border: 1px solid var(--border); }
 
     .bubble {
       padding: 20px; border-radius: 20px;
-      background: white; box-shadow: var(--shadow);
+      background: var(--surface); box-shadow: var(--shadow);
       line-height: 1.6; font-size: 0.95rem; border: 1px solid var(--border);
       max-width: 80%;
     }
@@ -195,7 +208,7 @@
 
     /* Typing indicator */
     .typing-row { display: flex; gap: 16px; max-width: 900px; width: 100%; margin: 0 auto; }
-    .typing-bubble { background: white; border-radius: 20px; padding: 16px 24px; border: 1px solid var(--border); display: flex; gap: 6px; }
+    .typing-bubble { background: var(--surface); border-radius: 20px; padding: 16px 24px; border: 1px solid var(--border); display: flex; gap: 6px; }
     .typing-dot { width: 8px; height: 8px; background: var(--text-muted); border-radius: 50%; animation: typingBounce 1s infinite; }
     .typing-dot:nth-child(2) { animation-delay: 0.2s; }
     .typing-dot:nth-child(3) { animation-delay: 0.4s; }
@@ -203,7 +216,7 @@
 
     /* Input Bar */
     .input-bar {
-      padding: 32px; background: white; border-top: 1px solid var(--border);
+      padding: 32px; background: var(--surface); border-top: 1px solid var(--border);
     }
     .input-container {
       max-width: 900px; margin: 0 auto;
@@ -217,7 +230,7 @@
       color: var(--text); font-family: 'Inter', sans-serif;
       font-size: 1rem; outline: none; transition: all 0.2s; resize: none;
     }
-    .text-input:focus { background: white; border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-glow); }
+    .text-input:focus { background: var(--surface); border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-glow); }
 
     .mic-btn {
       width: 56px; height: 56px; border-radius: 16px; border: none;
@@ -238,7 +251,7 @@
     /* Quick Chips */
     .quick-chips { display: flex; gap: 8px; flex-wrap: wrap; }
     .chip {
-      background: white; border: 1px solid var(--border);
+      background: var(--surface); border: 1px solid var(--border);
       border-radius: 10px; padding: 8px 16px;
       font-size: 0.8rem; font-weight: 600; color: var(--text-muted);
       cursor: pointer; transition: all 0.2s;
@@ -254,7 +267,7 @@
     }
     .modal-overlay.open { opacity: 1; pointer-events: all; }
     .modal {
-      background: white; border-radius: 24px; padding: 40px;
+      background: var(--surface); border-radius: 24px; padding: 40px;
       max-width: 550px; width: 100%; box-shadow: 0 30px 60px rgba(0,0,0,0.15);
       transform: translateY(20px); transition: all 0.3s;
     }
@@ -290,6 +303,7 @@
       <h1>VoiceRFQ</h1>
     </div>
     <div class="topbar-right">
+      <button class="btn btn-ghost" onclick="toggleDarkMode()" id="darkToggle" title="Nachtmodus">🌙</button>
       <div class="wake-badge" id="wakeBadge" onclick="toggleWakeWord()">
         <div class="wake-dot"></div> Hey Agent
       </div>
@@ -367,7 +381,8 @@
 </div>
 
 <div class="toast" id="toast"></div>
-<div style="position:fixed; bottom:10px; right:10px; font-size:0.6rem; color:var(--text-muted); pointer-events:none">v1.6 (Driving Edition)</div>
+<div style="position:fixed; bottom:10px; right:10px; font-size:0.6rem; color:var(--text-muted); pointer-events:none">v1.7 (Pro-Driver Update)</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 <script>
@@ -384,10 +399,25 @@ let wakeActive = false;
 let recognition = null;
 let wakeRec = null;
 let msgCount = 0;
+let isDark = localStorage.getItem('vrfq_dark') === 'true';
 
 (function init() {
+  if (isDark) document.body.classList.add('dark');
+  document.getElementById('darkToggle').textContent = isDark ? '☀️' : '🌙';
+
   if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
   if (apiKey) document.getElementById('apiKeyInput').value = apiKey;
+  
+  // Lade gespeicherte Dokumente
+  const saved = localStorage.getItem('vrfq_docs');
+  if (saved) {
+    try {
+      docs = JSON.parse(saved);
+      renderDocs();
+      if (docs.length) setActiveDoc(docs[0].id);
+    } catch(e) {}
+  }
+
   setupRecognition();
   
   // Drag & Drop
@@ -396,6 +426,17 @@ let msgCount = 0;
   zone.addEventListener('dragleave', () => zone.style.borderColor = 'var(--border)');
   zone.addEventListener('drop', e => { e.preventDefault(); zone.style.borderColor = 'var(--border)'; handleFiles(e.dataTransfer.files); });
 })();
+
+function toggleDarkMode() {
+  isDark = !isDark;
+  document.body.classList.toggle('dark', isDark);
+  localStorage.setItem('vrfq_dark', isDark);
+  document.getElementById('darkToggle').textContent = isDark ? '☀️' : '🌙';
+}
+
+function saveDocsToStorage() {
+  localStorage.setItem('vrfq_docs', JSON.stringify(docs));
+}
 
 // ══════════════════════════════════════════════════════════════
 // API & FILES
@@ -420,6 +461,7 @@ async function handleFiles(files) {
 
       const id = Date.now() + Math.random();
       docs.push({ id, name: f.name, content });
+      saveDocsToStorage();
       renderDocs();
       if (!activeDocId) setActiveDoc(id);
       showToast(`${f.name} geladen!`);
@@ -476,16 +518,16 @@ function setActiveDoc(id) {
 function removeDoc(id, e) {
   e.stopPropagation();
   docs = docs.filter(x => x.id != id);
+  saveDocsToStorage();
   if (activeDocId == id) activeDocId = docs.length ? docs[0].id : null;
   setActiveDoc(activeDocId);
 }
 
 // ══════════════════════════════════════════════════════════════
-// GEMINI API
+// GEMINI & OLLAMA API
 // ══════════════════════════════════════════════════════════════
 function toggleModelSource() {
   const src = document.getElementById('modelSource').value;
-  // Ollama Config immer zeigen bei Hybrid oder Ollama
   document.getElementById('ollamaConfig').style.display = (src === 'gemini' ? 'none' : 'block');
 }
 
@@ -501,7 +543,6 @@ async function sendText(text) {
     let system = 'Du bist ein professioneller Vertriebs-Assistent. Antworte präzise auf Deutsch.';
     if (activeDoc) system += `\n\nDokument: ${activeDoc.content.substring(0, 7000)}`;
     
-    // Versuch 1: Gemini (falls Hybrid oder Gemini gewählt)
     if (source === 'hybrid' || source === 'gemini') {
       try {
         const reply = await callGemini(text, system);
@@ -514,7 +555,6 @@ async function sendText(text) {
       }
     }
 
-    // Versuch 2: Ollama (falls Hybrid Fallback oder Ollama gewählt)
     const models = document.getElementById('ollamaModel').value.split(',').map(m => m.trim());
     for (const m of models) {
       try {
@@ -525,7 +565,7 @@ async function sendText(text) {
         console.error(`Ollama Modell ${m} fehlgeschlagen:`, e);
       }
     }
-    throw new Error('Kein Modell (Cloud oder Lokal) konnte antworten. Prüfe deine Verbindung und ob Ollama läuft.');
+    throw new Error('Kein Modell konnte antworten.');
 
   } catch(e) {
     removeTyping(typingId);
@@ -568,14 +608,11 @@ function handleReply(reply, typingId, actualSource) {
   addBubble(reply, 'agent');
   history.push({ role: actualSource === 'gemini' ? 'model' : 'assistant', parts: [{ text: reply }] });
   speakText(reply);
+  
+  if (wakeActive) {
+    setTimeout(() => { if (!isListening && !isSpeaking) toggleMic(); }, 1500);
+  }
 }
-
-function sendFromInput() {
-  const el = document.getElementById('textInput');
-  if (el.value.trim()) { sendText(el.value.trim()); el.value = ''; autoResize(el); }
-}
-
-function handleKey(e) { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendFromInput(); } }
 
 // ══════════════════════════════════════════════════════════════
 // SPEECH & UI
@@ -595,7 +632,7 @@ function setupRecognition() {
 
 function toggleMic() {
   if (isListening) { recognition.stop(); }
-  else { recognition.start(); isListening = true; document.getElementById('micBtn').classList.add('listening'); }
+  else { try { recognition.start(); isListening = true; document.getElementById('micBtn').classList.add('listening'); } catch(e){} }
 }
 
 function toggleWakeWord() {
@@ -615,33 +652,39 @@ function toggleWakeWord() {
 
 function speakText(t) {
   if (!window.speechSynthesis) return;
-  window.speechSynthesis.cancel(); // Vorherige Stoppen
-  
+  window.speechSynthesis.cancel();
+  isSpeaking = true;
   const text = t.replace(/[*#]/g, '');
-  const chunks = text.match(/.{1,200}(\s|$)/g) || [text]; // In kleine Häppchen teilen für flüssiges Lesen
-  
-  chunks.forEach(chunk => {
+  const chunks = text.match(/.{1,200}(\s|$)/g) || [text];
+  chunks.forEach((chunk, i) => {
     const u = new SpeechSynthesisUtterance(chunk);
     u.lang = 'de-DE';
-    u.rate = 1.0;
+    if (i === chunks.length - 1) u.onend = () => { isSpeaking = false; };
     window.speechSynthesis.speak(u);
   });
 }
 
 function readActiveDoc() {
   const d = docs.find(x => x.id == activeDocId);
-  if (!d) { showToast('Kein Dokument zum Vorlesen!', 'error'); return; }
-  showToast('Lese Dokument vor...');
-  speakText(`Ich lese das Dokument ${d.name} vor: ` + d.content);
+  if (!d) { showToast('Kein Dokument!', 'error'); return; }
+  speakText(`Dokument ${d.name}: ` + d.content);
 }
 
 function addBubble(text, role) {
   const win = document.getElementById('chatWindow');
   const row = document.createElement('div');
   row.className = `msg-row ${role}`;
-  row.innerHTML = `<div class="avatar ${role}-av">${role==='user'?'👤':'🤖'}</div><div class="bubble"><div class="bubble-meta">${role==='user'?'Du':'Agent'}</div><p>${text.replace(/\n/g, '<br>')}</p></div>`;
+  let actions = '';
+  if (role === 'agent') {
+    actions = `<button class="chip" style="margin-top:8px; font-size:0.7rem" onclick="mailDraft(\`${text.replace(/[`]/g, "'")}\`)">📧 In Mail öffnen</button>`;
+  }
+  row.innerHTML = `<div class="avatar ${role}-av">${role==='user'?'👤':'🤖'}</div><div class="bubble"><div class="bubble-meta">${role==='user'?'Du':'Agent'}</div><p>${text.replace(/\n/g, '<br>')}</p>${actions}</div>`;
   win.appendChild(row);
   win.scrollTop = win.scrollHeight;
+}
+
+function mailDraft(txt) {
+  window.location.href = `mailto:?subject=RFQ-Entwurf&body=${encodeURIComponent(txt)}`;
 }
 
 function showTyping() {
@@ -654,13 +697,11 @@ function showTyping() {
 }
 
 function removeTyping(id) { const el = document.getElementById(id); if(el) el.remove(); }
-
 function showToast(m, type='') {
   const t = document.getElementById('toast');
   t.textContent = m; t.className = 'toast show' + (type?' '+type:'');
   setTimeout(() => t.classList.remove('show'), 3000);
 }
-
 function autoResize(el) { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 150) + 'px'; }
 function openModal() { document.getElementById('modalOverlay').classList.add('open'); }
 function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
@@ -670,22 +711,23 @@ function exportSession() {
   const blob = new Blob([txt], {type: 'text/plain'});
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'export.txt'; a.click();
 }
-
 async function loadSample() {
-  showToast('Lade Beispiel...');
   try {
     const res = await fetch('beispiel_rfq.txt');
-    if (!res.ok) throw new Error();
     const text = await res.text();
     const id = 'sample-' + Date.now();
     docs.push({ id, name: 'beispiel_rfq.txt', content: text });
+    saveDocsToStorage();
     renderDocs();
     setActiveDoc(id);
     showToast('Beispiel geladen! ✨');
-  } catch(e) {
-    showToast('Fehler beim Laden des Beispiels', 'error');
-  }
+  } catch(e) {}
 }
+function sendFromInput() {
+  const el = document.getElementById('textInput');
+  if (el.value.trim()) { sendText(el.value.trim()); el.value = ''; autoResize(el); }
+}
+function handleKey(e) { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendFromInput(); } }
 </script>
 </body>
 </html>
