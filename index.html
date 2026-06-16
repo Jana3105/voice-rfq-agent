@@ -342,9 +342,21 @@
       </div>
     </div>
     <div class="sidebar-section">
+      <div class="sidebar-label">ANALYSE-MODUS</div>
+      <select class="inp" id="analysisMode" style="font-size:0.8rem">
+        <option value="general">Standard Assistent</option>
+        <option value="risk">Risiko-Check (Pönale/Haftung)</option>
+        <option value="sales">Vertriebs-Antwort entwerfen</option>
+        <option value="tech">Technische Spezifikationen</option>
+      </select>
+    </div>
+    <div class="sidebar-section">
       <div class="sidebar-label">NOTIZEN / HIGHLIGHTS</div>
       <div id="notesContainer" style="font-size:0.8rem; color:var(--text-muted); background:var(--surface2); padding:12px; border-radius:12px; min-height:60px; margin-bottom:12px">Noch keine Notizen...</div>
-      <button class="btn btn-ghost" onclick="sendText('Notiere: ' + prompt('Notiz eingeben:'))" style="width:100%; font-size:0.7rem">➕ Notiz hinzufügen</button>
+      <div style="display:flex; gap:8px">
+        <button class="btn btn-ghost" onclick="sendText('Notiere: ' + prompt('Notiz eingeben:'))" style="flex:1; font-size:0.7rem">➕</button>
+        <button class="btn btn-ghost" onclick="clearNotes()" style="font-size:0.7rem">🗑️ Alle</button>
+      </div>
     </div>
     <div class="sidebar-section">
       <div class="sidebar-label">DOKUMENTE</div>
@@ -396,8 +408,7 @@
 </div>
 
 <div class="toast" id="toast"></div>
-<div style="position:fixed; bottom:10px; right:10px; font-size:0.6rem; color:var(--text-muted); pointer-events:none">v2.3 (Sales Pro Edition)</div>
-
+<div style="position:fixed; bottom:10px; right:10px; font-size:0.6rem; color:var(--text-muted); pointer-events:none">v2.4 (Strategic Advisor)</div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 <script>
@@ -503,12 +514,20 @@ function saveNote(txt) {
   updateNotesDisplay();
 }
 
+function clearNotes() {
+  if (confirm('Alle Notizen löschen?')) {
+    localStorage.removeItem('vrfq_notes');
+    updateNotesDisplay();
+  }
+}
+
 function updateNotesDisplay() {
   const container = document.getElementById('notesContainer');
   if (!container) return;
   let notes = JSON.parse(localStorage.getItem('vrfq_notes') || '[]');
   if (notes.length === 0) { container.innerHTML = 'Noch keine Notizen...'; return; }
-  container.innerHTML = notes.slice(-3).map(n => `<div style="margin-bottom:8px; padding-bottom:4px; border-bottom:1px solid var(--border)">• ${n.text}</div>`).join('');
+  // Zeige die letzten 5 Notizen
+  container.innerHTML = notes.slice(-5).reverse().map(n => `<div style="margin-bottom:8px; padding-bottom:4px; border-bottom:1px solid var(--border); font-size:0.75rem">• ${n.text}</div>`).join('');
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -623,8 +642,14 @@ async function sendText(text) {
   
   try {
     const activeDoc = docs.find(d => d.id == activeDocId);
+    const mode = document.getElementById('analysisMode').value;
+    
     let system = 'Du bist ein professioneller Vertriebs-Assistent. Antworte präzise auf Deutsch.';
-    if (activeDoc) system += `\n\nDokument: ${activeDoc.content.substring(0, 7000)}`;
+    if (mode === 'risk') system = 'Analysiere das Dokument kritisch auf Risiken wie Pönalen, Haftungsgrenzen, Kündigungsfristen und Lieferverzug. Antworte strukturiert und warnend.';
+    if (mode === 'sales') system = 'Entwirf eine professionelle, höfliche Antwort-Email an den Kunden basierend auf den RFQ-Daten. Fokus auf Kundenbindung und Kompetenz.';
+    if (mode === 'tech') system = 'Extrahiere alle technischen Parameter, Maße, Leistungen und Anforderungen aus dem Text. Antworte in einer sauberen Liste.';
+
+    if (activeDoc) system += `\n\nDokument-Kontext: ${activeDoc.content.substring(0, 7000)}`;
     
     if (source === 'hybrid' || source === 'gemini') {
       try {
