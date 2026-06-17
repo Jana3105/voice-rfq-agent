@@ -327,6 +327,11 @@
       </div>
     </div>
     <div class="sidebar-section">
+      <div class="sidebar-label">ELEVENLABS (High-End TTS)</div>
+      <input type="password" class="inp" id="elKeyInput" placeholder="ElevenLabs API Key (optional)" onchange="saveElKey()" />
+      <div style="font-size:0.6rem; color:var(--text-muted); margin-top:8px">Für absolut menschliche Stimmen (NotebookLM-Stil).</div>
+    </div>
+    <div class="sidebar-section">
       <div class="sidebar-label">API ZUGANG <span onclick="openModal()" style="cursor:pointer">❓</span></div>
       <div class="api-row">
         <input type="password" class="inp" id="apiKeyInput" placeholder="AQ... oder AIza..." />
@@ -421,7 +426,8 @@
 </div>
 
 <div class="toast" id="toast"></div>
-<div style="position:fixed; bottom:10px; right:10px; font-size:0.6rem; color:var(--text-muted); pointer-events:none">v2.6 (Ultimate Cockpit)</div>
+<div style="position:fixed; bottom:10px; right:10px; font-size:0.6rem; color:var(--text-muted); pointer-events:none">v2.7 (Ultimate Edition)</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 <script>
@@ -442,12 +448,15 @@ let isDark = localStorage.getItem('vrfq_dark') === 'true';
 
 let voices = [];
 
+let elKey = localStorage.getItem('vrfq_el_key') || '';
+
 (function init() {
   if (isDark) document.body.classList.add('dark');
   document.getElementById('darkToggle').textContent = isDark ? '☀️' : '🌙';
 
   if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
   if (apiKey) document.getElementById('apiKeyInput').value = apiKey;
+  if (elKey) document.getElementById('elKeyInput').value = elKey;
   
   // Lade Ollama Einstellungen
   const savedHost = localStorage.getItem('vrfq_ollama_host');
