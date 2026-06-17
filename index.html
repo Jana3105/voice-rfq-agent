@@ -379,6 +379,13 @@
     <div class="doc-banner" id="docBanner">
       <span>📋 Kein Dokument aktiv</span>
     </div>
+    <div id="summaryCard" style="display:none; padding:16px 32px; background:var(--accent-glow); border-bottom:1px solid var(--border); font-size:0.85rem">
+      <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:16px">
+        <div><div class="sidebar-label" style="margin-bottom:4px; font-size:0.6rem">💰 Budget/Preis</div><div id="sumPrice">-</div></div>
+        <div><div class="sidebar-label" style="margin-bottom:4px; font-size:0.6rem">⏳ Deadline</div><div id="sumDeadline">-</div></div>
+        <div><div class="sidebar-label" style="margin-bottom:4px; font-size:0.6rem">⚠️ Top-Risiko</div><div id="sumRisk">-</div></div>
+      </div>
+    </div>
     <div style="padding: 10px 32px; display: flex; gap: 10px; background: var(--surface); border-bottom: 1px solid var(--border)">
         <button class="btn btn-primary" onclick="readActiveDoc()" style="flex:1; justify-content:center; padding: 15px">🔊 Dokument vorlesen</button>
         <button class="btn btn-ghost" onclick="window.speechSynthesis.cancel()" style="padding: 15px">🛑 Stop</button>
@@ -401,9 +408,12 @@
           <button class="chip" onclick="sendText('Erstelle einen E-Mail Entwurf')">📧 Mail-Draft</button>
         </div>
         <div class="input-row">
-          <button class="mic-btn" id="micBtn" onclick="toggleMic()">🎙️</button>
-          <textarea class="text-input" id="textInput" rows="1" placeholder="Frag mich was..." onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
-          <button class="send-btn" onclick="sendFromInput()">➤</button>
+          <div style="position:relative; flex:1; display:flex; align-items:center">
+            <canvas id="waveform" style="position:absolute; left:70px; right:70px; height:40px; pointer-events:none; opacity:0; transition:opacity 0.3s"></canvas>
+            <button class="mic-btn" id="micBtn" onclick="toggleMic()">🎙️</button>
+            <textarea class="text-input" id="textInput" rows="1" placeholder="Frag mich was..." onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+            <button class="send-btn" onclick="sendFromInput()">➤</button>
+          </div>
         </div>
       </div>
     </div>
@@ -411,8 +421,7 @@
 </div>
 
 <div class="toast" id="toast"></div>
-<div style="position:fixed; bottom:10px; right:10px; font-size:0.6rem; color:var(--text-muted); pointer-events:none">v2.5 (Auditor Edition)</div>
-
+<div style="position:fixed; bottom:10px; right:10px; font-size:0.6rem; color:var(--text-muted); pointer-events:none">v2.6 (Ultimate Cockpit)</div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 <script>
@@ -597,10 +606,45 @@ async function handleFiles(files) {
       docs.push({ id, name: f.name, content });
       saveDocsToStorage();
       renderDocs();
-      if (!activeDocId) setActiveDoc(id);
+      setActiveDoc(id);
       showToast(`${f.name} geladen!`);
+      
+      // Auto-Analyse starten
+      runAutoAnalysis(content);
     } catch(e) { showToast('Fehler beim Lesen', 'error'); }
   }
+}
+
+async function runAutoAnalysis(content) {
+  const source = document.getElementById('modelSource').value;
+  if (source === 'gemini' && !apiKey) return;
+  
+  showToast('Starte Auto-Analyse... 🧠');
+  const system = "Extrahiere aus dem RFQ folgende Daten im JSON Format: {price: '...', deadline: '...', topRisk: '...'}. Antworte NUR im JSON Format.";
+  const prompt = "Hier ist das Dokument: " + content.substring(0, 5000);
+  
+  try {
+    let raw = '';
+    if (source === 'hybrid' || source === 'gemini') {
+      raw = await callGemini(prompt, system);
+    } else {
+      const model = document.getElementById('ollamaModel').value.split(',')[0].trim();
+      raw = await callOllama(prompt, system, model);
+    }
+    
+    const jsonMatch = raw.match(/\{.*\}/s);
+    if (jsonMatch) {
+      const data = JSON.parse(jsonMatch[0]);
+      updateSummaryCard(data);
+    }
+  } catch(e) { console.warn('Auto-Analyse fehlgeschlagen'); }
+}
+
+function updateSummaryCard(data) {
+  document.getElementById('summaryCard').style.display = 'block';
+  document.getElementById('sumPrice').textContent = data.price || 'N/A';
+  document.getElementById('sumDeadline').textContent = data.deadline || 'N/A';
+  document.getElementById('sumRisk').textContent = data.topRisk || 'N/A';
 }
 
 async function readPDF(file) {
@@ -807,9 +851,58 @@ function playBeep(type) {
   }
 }
 
+let audioCtx, analyser, dataArray, animationId;
+
+function startWaveform() {
+  const canvas = document.getElementById('waveform');
+  const ctx = canvas.getContext('2d');
+  canvas.style.opacity = '1';
+  
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 256;
+    const bufferLength = analyser.frequencyBinCount;
+    dataArray = new Uint8Array(bufferLength);
+  }
+
+  navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+    const source = audioCtx.createMediaStreamSource(stream);
+    source.connect(analyser);
+    draw();
+  });
+
+  function draw() {
+    animationId = requestAnimationFrame(draw);
+    analyser.getByteFrequencyData(dataArray);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = isDark ? '#6366f1' : '#6366f1';
+    const barWidth = (canvas.width / dataArray.length) * 2.5;
+    let x = 0;
+    for (let i = 0; i < dataArray.length; i++) {
+      const barHeight = dataArray[i] / 4;
+      ctx.fillRect(x, (canvas.height - barHeight)/2, barWidth, barHeight);
+      x += barWidth + 1;
+    }
+  }
+}
+
+function stopWaveform() {
+  cancelAnimationFrame(animationId);
+  document.getElementById('waveform').style.opacity = '0';
+}
+
 function toggleMic() {
-  if (isListening) { recognition.stop(); }
-  else { try { playBeep('start'); recognition.start(); isListening = true; document.getElementById('micBtn').classList.add('listening'); } catch(e){} }
+  if (isListening) { recognition.stop(); stopWaveform(); }
+  else { 
+    try { 
+      playBeep('start'); 
+      recognition.start(); 
+      isListening = true; 
+      document.getElementById('micBtn').classList.add('listening'); 
+      startWaveform();
+    } catch(e){} 
+  }
 }
 
 function toggleWakeWord() {
