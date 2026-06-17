@@ -55,51 +55,58 @@
     .shell {
       position: relative;
       display: grid;
-      grid-template-columns: 300px 1fr;
-      grid-template-rows: 72px 1fr;
+      grid-template-columns: minmax(260px, 320px) 1fr;
+      grid-template-rows: auto 1fr;
       height: 100vh;
       width: 100%;
-      max-width: 1440px;
+      max-width: 100vw;
       background: var(--surface);
-      box-shadow: 0 0 40px rgba(0,0,0,0.03);
+      overflow: hidden;
+    }
+
+    @media (max-width: 1024px) {
+      .shell { grid-template-columns: 1fr; grid-template-rows: auto auto 1fr; }
+      .sidebar { border-right: none; border-bottom: 1px solid var(--border); max-height: 40vh; overflow-y: auto; }
+      .sidebar-section { padding: 16px; }
     }
 
     /* ── Top Bar ── */
     .topbar {
       grid-column: 1 / -1;
       display: flex; align-items: center; justify-content: space-between;
-      padding: 0 32px;
+      padding: 12px 24px;
+      min-height: 64px;
       border-bottom: 1px solid var(--border);
       background: var(--surface);
       backdrop-filter: blur(12px);
       z-index: 100;
     }
-    .logo { display: flex; align-items: center; gap: 12px; }
+    .logo { display: flex; align-items: center; gap: 10px; }
     .logo-icon {
-      width: 40px; height: 40px;
+      width: 36px; height: 36px;
       background: linear-gradient(135deg, var(--accent), var(--accent-light));
-      border-radius: 12px;
+      border-radius: 10px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 20px;
+      font-size: 18px;
       color: white;
       box-shadow: 0 4px 12px var(--accent-glow);
     }
     .logo h1 {
-      font-size: 1.25rem; font-weight: 800;
+      font-size: 1.15rem; font-weight: 800;
       color: var(--text);
       letter-spacing: -0.02em;
     }
-    .topbar-right { display: flex; align-items: center; gap: 16px; }
+    .topbar-right { display: flex; align-items: center; gap: 12px; }
 
     .wake-badge {
       display: flex; align-items: center; gap: 8px;
       background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 20px; padding: 6px 16px;
-      font-size: 0.8rem; font-weight: 600; color: var(--text-muted);
+      border-radius: 20px; padding: 5px 14px;
+      font-size: 0.75rem; font-weight: 600; color: var(--text-muted);
       cursor: pointer; transition: all 0.2s;
     }
     .wake-badge.active { border-color: rgba(16,185,129,0.3); color: var(--green); background: rgba(16,185,129,0.05); }
-    .wake-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-muted); }
+    .wake-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text-muted); }
     .wake-badge.active .wake-dot { background: var(--green); box-shadow: 0 0 8px var(--green); animation: blink 1.5s infinite; }
     @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
@@ -108,9 +115,10 @@
       background: var(--bg);
       border-right: 1px solid var(--border);
       display: flex; flex-direction: column;
-      overflow: hidden;
+      overflow-y: auto;
+      overflow-x: hidden;
     }
-    .sidebar-section { padding: 24px; border-bottom: 1px solid var(--border); }
+    .sidebar-section { padding: 20px; border-bottom: 1px solid var(--border); }
     .sidebar-label {
       font-size: 0.7rem; font-weight: 800; text-transform: uppercase;
       letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 16px;
@@ -281,18 +289,137 @@
     }
     .toast.show { transform: translateX(-50%) translateY(0); }
     .toast.error { background: var(--red); }
+
+    .help-icon {
+      width: 22px; height: 22px; border-radius: 999px;
+      border: 1px solid var(--border); background: var(--surface);
+      color: var(--accent); font-weight: 800; cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: center;
+      line-height: 1; font-size: 0.8rem;
+    }
+    .help-icon:hover { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-glow); }
+    .sample-list { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+    .sample-btn {
+      width: 100%; justify-content: flex-start; text-align: left;
+      font-size: 0.72rem; line-height: 1.25; padding: 10px 12px;
+    }
+    .mode-grid { display:grid; grid-template-columns: 1fr 1fr; gap:8px; }
+    .mode-btn {
+      border:1px solid var(--border); background:var(--surface);
+      border-radius:10px; padding:10px; cursor:pointer; color:var(--text-muted);
+      font: inherit; font-size:0.72rem; font-weight:700; text-align:left;
+      min-height:58px; transition: all 0.2s;
+    }
+    .mode-btn:hover { border-color: var(--accent); color: var(--text); }
+    .mode-btn.active { border-color: var(--accent); color: var(--accent); background: var(--accent-glow); }
+    .mode-btn span { display:block; color:var(--text); font-size:0.78rem; margin-bottom:3px; }
+    .settings-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+    .settings-group { background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+    .settings-group.full { grid-column: 1 / -1; }
+    .settings-title { font-size: 0.72rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; display:flex; justify-content:space-between; align-items:center; }
+
+    .workspace-header {
+      padding: 20px 32px 14px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .workspace-title { display:flex; align-items:flex-start; justify-content:space-between; gap: 16px; margin-bottom: 16px; }
+    .doc-kicker { font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 5px; }
+    .doc-heading { font-size: 1.35rem; font-weight: 800; color: var(--text); line-height: 1.2; }
+    .doc-subline { margin-top: 6px; color: var(--text-muted); font-size: 0.86rem; }
+    .summary-grid { display:grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    .summary-tile { background: var(--bg); border:1px solid var(--border); border-radius: 12px; padding: 12px; min-height: 76px; }
+    .summary-tile strong { display:block; font-size:0.65rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-muted); margin-bottom:7px; }
+    .summary-tile span { font-size:0.86rem; font-weight:700; line-height:1.35; }
+    .main-tabs { display:flex; gap: 6px; padding: 0 32px; border-bottom:1px solid var(--border); background: var(--surface); }
+    .main-tab { border:0; background: transparent; color: var(--text-muted); padding: 13px 12px; font-weight: 700; cursor:pointer; border-bottom: 2px solid transparent; }
+    .main-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .main-content { flex: 1; min-height: 0; overflow: hidden; background: linear-gradient(to bottom, var(--surface) 0%, var(--bg) 100%); }
+    .tab-panel { display:none; height:100%; overflow:auto; }
+    .tab-panel.active { display:flex; flex-direction:column; }
+    .dashboard-panel { padding: 28px 32px; display:none; gap: 20px; }
+    .dashboard-panel.active { display:block; }
+    .analysis-grid { display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; max-width: 1100px; margin: 0 auto; }
+    .analysis-card { background: var(--surface); border:1px solid var(--border); border-radius: 12px; padding: 18px; box-shadow: var(--shadow); }
+    .analysis-card h3 { font-size: 0.92rem; margin-bottom: 12px; }
+    .analysis-list { display:flex; flex-direction:column; gap:10px; color: var(--text-muted); font-size:0.88rem; line-height:1.45; }
+    .analysis-row { display:flex; justify-content:space-between; gap:14px; border-bottom:1px solid var(--border); padding-bottom:8px; }
+    .analysis-row span:first-child { color: var(--text-muted); }
+    .analysis-row span:last-child { color: var(--text); font-weight:700; text-align:right; }
+    .positions-table { width:100%; border-collapse: collapse; font-size:0.86rem; }
+    .positions-table th, .positions-table td { text-align:left; padding:10px 8px; border-bottom:1px solid var(--border); vertical-align:top; }
+    .positions-table th { color:var(--text-muted); font-size:0.68rem; text-transform:uppercase; letter-spacing:0.08em; }
+    .positions-table td:nth-child(2) { white-space:nowrap; font-weight:700; }
+    .empty-state { max-width: 640px; margin: 70px auto; text-align:center; color: var(--text-muted); line-height:1.6; }
+    .textarea-preview { width:100%; min-height:280px; border:1px solid var(--border); border-radius:12px; background:var(--surface); color:var(--text); padding:16px; font: inherit; resize:vertical; line-height:1.55; }
+    @media (max-width: 900px) {
+      .settings-grid, .summary-grid, .analysis-grid { grid-template-columns: 1fr; }
+      .workspace-title { flex-direction:column; }
+      .main-tabs { overflow-x:auto; padding:0 16px; }
+      .workspace-header, .dashboard-panel, .input-bar { padding-left:16px; padding-right:16px; }
+    }
   </style>
 </head>
 <body>
 
 <div class="modal-overlay" id="modalOverlay" onclick="closeModalBg(event)">
   <div class="modal">
-    <h2 style="margin-bottom:12px">🔑 API Key Hilfe</h2>
-    <p style="color:var(--text-muted); margin-bottom:24px">Deine Daten werden sicher lokal im Browser gespeichert.</p>
-    <div style="background:var(--surface2); padding:20px; border-radius:16px; margin-bottom:24px">
-      <p style="font-size:0.9rem; line-height:1.6">Hol dir einen kostenlosen Key auf <strong>aistudio.google.com</strong>. Kopiere ihn und füge ihn links in das Schlüsselfeld ein.</p>
-    </div>
+    <h2 id="modalTitle" style="margin-bottom:12px">Hilfe</h2>
+    <p id="modalIntro" style="color:var(--text-muted); margin-bottom:24px"></p>
+    <div id="modalBody" style="background:var(--surface2); padding:20px; border-radius:16px; margin-bottom:24px; font-size:0.9rem; line-height:1.6"></div>
     <button class="btn btn-primary" style="width:100%; justify-content:center" onclick="closeModal()">Verstanden</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="settingsOverlay" onclick="closeSettingsBg(event)">
+  <div class="modal" style="max-width:820px">
+    <h2 style="margin-bottom:8px">Einstellungen</h2>
+    <p style="color:var(--text-muted); margin-bottom:24px">Verbindungen, Sprache und Hilfsfunktionen fuer den RFQ-Agenten.</p>
+    <div class="settings-grid">
+      <div class="settings-group">
+        <div class="settings-title">KI-Quelle <button class="help-icon" onclick="openHelp('modelSource')" title="Hilfe zur KI-Quelle">?</button></div>
+        <select class="inp" id="modelSource" onchange="toggleModelSource()">
+          <option value="hybrid">Hybrid (Auto-Fallback)</option>
+          <option value="gemini">Gemini (Nur Cloud)</option>
+          <option value="ollama">Ollama (Nur Lokal)</option>
+        </select>
+        <div id="ollamaConfig" style="margin-top:12px">
+          <div class="settings-title" style="font-size:0.6rem; margin-bottom:8px">Ollama Server</div>
+          <input type="text" class="inp" id="ollamaHost" placeholder="http://localhost:11434" value="http://localhost:11434" style="margin-bottom:8px" onchange="saveOllamaSettings()" />
+          <div class="settings-title" style="font-size:0.6rem; margin-bottom:8px">Ollama Modelle</div>
+          <input type="text" class="inp" id="ollamaModel" placeholder="qwen2, llama3" value="qwen2, llama3" onchange="saveOllamaSettings()" />
+        </div>
+      </div>
+      <div class="settings-group">
+        <div class="settings-title">AI Studio API <button class="help-icon" onclick="openHelp('aiStudio')" title="Hilfe zum AI Studio API-Key">?</button></div>
+        <input type="password" class="inp" id="apiKeyInput" placeholder="AQ... oder AIza..." onchange="saveApiKey()" />
+        <div style="font-size:0.75rem; color:var(--text-muted); margin-top:10px">
+          <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--accent); text-decoration:none">KI-Key beantragen</a>
+        </div>
+      </div>
+      <div class="settings-group">
+        <div class="settings-title">Sprache & Audio <button class="help-icon" onclick="openHelp('voice')" title="Hilfe zu Stimme und Audio">?</button></div>
+        <select class="inp" id="voiceSelect" style="font-size:0.75rem; margin-bottom:12px"></select>
+        <div style="display:flex; align-items:center; gap:10px">
+          <span title="Tempo" style="font-size:1rem">Tempo</span>
+          <input type="range" min="0.5" max="2" step="0.1" value="1.0" class="inp" style="padding:0; flex:1; height:4px" id="rateRange" oninput="updateSpeechParams()">
+          <span id="rateVal" style="font-size:0.7rem; font-weight:700; min-width:24px">1.0</span>
+        </div>
+      </div>
+      <div class="settings-group">
+        <div class="settings-title">Google Cloud TTS <button class="help-icon" onclick="openHelp('tts')" title="Hilfe zu Text-to-Speech">?</button></div>
+        <input type="password" class="inp" id="gcKeyInput" placeholder="Google Cloud API Key" onchange="saveGcKey()" />
+        <div style="font-size:0.75rem; color:var(--text-muted); margin-top:10px; line-height:1.4">
+          Optional fuer bessere Sprachausgabe.
+          <a href="https://console.cloud.google.com/apis/library/texttospeech.googleapis.com" target="_blank" style="color:var(--accent); text-decoration:none">Key beantragen</a>
+        </div>
+      </div>
+      <div class="settings-group full">
+        <div class="settings-title">Expertenmodus <button class="help-icon" onclick="openHelp('expert')" title="Hilfe zum Expertenmodus">?</button></div>
+        <button class="btn btn-ghost" onclick="startExpertChat(); closeSettings();" style="justify-content:center">KI-Experten fragen</button>
+      </div>
+    </div>
+    <button class="btn btn-primary" style="width:100%; justify-content:center; margin-top:24px" onclick="closeSettings()">Fertig</button>
   </div>
 </div>
 
@@ -303,60 +430,35 @@
       <h1>VoiceRFQ</h1>
     </div>
     <div class="topbar-right">
+      <button class="btn btn-ghost" onclick="refreshApp()" title="Seite neu laden">Neu laden</button>
       <button class="btn btn-ghost" onclick="toggleDarkMode()" id="darkToggle" title="Nachtmodus">🌙</button>
       <div class="wake-badge" id="wakeBadge" onclick="toggleWakeWord()">
         <div class="wake-dot"></div> Hey Agent
       </div>
-      <button class="btn btn-ghost" onclick="exportSession()">📤 Export</button>
+      <button class="btn btn-ghost" onclick="openSettings()" title="Einstellungen">Einstellungen</button>
+      <button class="btn btn-ghost" onclick="resetDemo()">Demo resetten</button>
+      <button class="btn btn-ghost" onclick="exportSession()">Exportieren</button>
     </div>
   </header>
 
   <aside class="sidebar">
     <div class="sidebar-section">
-      <div class="sidebar-label">KI-QUELLE</div>
-      <select class="inp" id="modelSource" onchange="toggleModelSource()">
-        <option value="hybrid">Hybrid (Auto-Fallback)</option>
-        <option value="gemini">Gemini (Nur Cloud)</option>
-        <option value="ollama">Ollama (Nur Lokal)</option>
-      </select>
-      <div id="ollamaConfig" style="margin-top:12px">
-        <div class="sidebar-label" style="font-size:0.6rem; margin-bottom:8px">OLLAMA SERVER (IP/URL)</div>
-        <input type="text" class="inp" id="ollamaHost" placeholder="http://localhost:11434" value="http://localhost:11434" style="margin-bottom:8px" onchange="saveOllamaSettings()" />
-        <div class="sidebar-label" style="font-size:0.6rem; margin-bottom:8px">OLLAMA MODELLE (Prio-Liste)</div>
-        <input type="text" class="inp" id="ollamaModel" placeholder="qwen2, llama3" value="qwen2, llama3" onchange="saveOllamaSettings()" />
-      </div>
-    </div>
-    <div class="sidebar-section">
-      <div class="sidebar-label">GOOGLE CLOUD (1 Mio. gratis)</div>
-      <input type="password" class="inp" id="gcKeyInput" placeholder="Google Cloud API Key (optional)" onchange="saveGcKey()" />
-      <div style="font-size:0.6rem; color:var(--text-muted); margin-top:8px">Alternative zu ElevenLabs. 1 Mio. Zeichen/Monat kostenlos.</div>
-    </div>
-    <div class="sidebar-section">
-      <div class="sidebar-label">API ZUGANG <span onclick="openModal()" style="cursor:pointer">❓</span></div>
-      <div class="api-row">
-        <input type="password" class="inp" id="apiKeyInput" placeholder="AQ... oder AIza..." />
-        <button class="btn btn-primary" onclick="saveApiKey()">💾</button>
-      </div>
-    </div>
-    <div class="sidebar-section">
-      <div class="sidebar-label">STIMME & AUDIO</div>
-      <select class="inp" id="voiceSelect" style="font-size:0.75rem; margin-bottom:8px"></select>
-      <div style="display:flex; flex-direction:column; gap:8px">
-        <div style="display:flex; justify-content:space-between; font-size:0.7rem"><span>Tempo</span><span id="rateVal">1.0</span></div>
-        <input type="range" min="0.5" max="2" step="0.1" value="1.0" class="inp" style="padding:0" id="rateRange" oninput="updateSpeechParams()">
-      </div>
-    </div>
-    <div class="sidebar-section">
-      <div class="sidebar-label">ANALYSE-MODUS</div>
-      <select class="inp" id="analysisMode" style="font-size:0.8rem">
+      <div class="sidebar-label">Arbeitsmodus <button class="help-icon" onclick="openHelp('analysis')" title="Hilfe zum Arbeitsmodus">?</button></div>
+      <select class="inp" id="analysisMode" style="display:none">
         <option value="general">Standard Assistent</option>
         <option value="risk">Risiko-Check (Pönale/Haftung)</option>
         <option value="sales">Vertriebs-Antwort entwerfen</option>
         <option value="tech">Technische Spezifikationen</option>
       </select>
+      <div class="mode-grid" id="modeGrid">
+        <button class="mode-btn active" data-mode="general" onclick="setAnalysisMode('general')"><span>Standard</span>Allgemeine RFQ-Fragen</button>
+        <button class="mode-btn" data-mode="risk" onclick="setAnalysisMode('risk')"><span>Risiko</span>Haftung, Pönalen, Fristen</button>
+        <button class="mode-btn" data-mode="sales" onclick="setAnalysisMode('sales')"><span>Vertrieb</span>E-Mail und Antwort</button>
+        <button class="mode-btn" data-mode="tech" onclick="setAnalysisMode('tech')"><span>Technik</span>Spezifikationen</button>
+      </div>
     </div>
     <div class="sidebar-section">
-      <div class="sidebar-label">NOTIZEN / HIGHLIGHTS</div>
+      <div class="sidebar-label">NOTIZEN / HIGHLIGHTS <button class="help-icon" onclick="openHelp('notes')" title="Hilfe zu Notizen">?</button></div>
       <div id="notesContainer" style="font-size:0.8rem; color:var(--text-muted); background:var(--surface2); padding:12px; border-radius:12px; min-height:60px; margin-bottom:12px">Noch keine Notizen...</div>
       <div style="display:flex; flex-direction:column; gap:8px">
         <div style="display:flex; gap:8px">
@@ -367,7 +469,7 @@
       </div>
     </div>
     <div class="sidebar-section">
-      <div class="sidebar-label">DOKUMENTE</div>
+      <div class="sidebar-label">DOKUMENTE <button class="help-icon" onclick="openHelp('documents')" title="Hilfe zu Dokumenten">?</button></div>
       <div class="upload-zone" id="uploadZone">
         <input type="file" id="fileInput" multiple onchange="handleFiles(this.files)" style="display:none" />
         <div onclick="document.getElementById('fileInput').click()">
@@ -375,58 +477,91 @@
           <p>Klicken oder Dateien hierher ziehen</p>
         </div>
       </div>
-      <button class="btn btn-ghost" onclick="loadSample()" style="width:100%; margin-top:12px; justify-content:center; font-size:0.75rem">✨ Beispiel RFQ laden</button>
+      <button class="btn btn-primary" onclick="loadAllSamples()" style="width:100%; margin-top:12px; justify-content:center; font-size:0.75rem">Alle Test-RFQs laden</button>
+      <div class="sample-list" id="sampleList"></div>
     </div>
     <div class="doc-tabs" id="docTabs"></div>
   </aside>
 
   <main class="main">
-    <div class="doc-banner" id="docBanner">
-      <span>📋 Kein Dokument aktiv</span>
-    </div>
-    <div id="summaryCard" style="display:none; padding:16px 32px; background:var(--accent-glow); border-bottom:1px solid var(--border); font-size:0.85rem">
-      <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:16px">
-        <div><div class="sidebar-label" style="margin-bottom:4px; font-size:0.6rem">💰 Budget/Preis</div><div id="sumPrice">-</div></div>
-        <div><div class="sidebar-label" style="margin-bottom:4px; font-size:0.6rem">⏳ Deadline</div><div id="sumDeadline">-</div></div>
-        <div><div class="sidebar-label" style="margin-bottom:4px; font-size:0.6rem">⚠️ Top-Risiko</div><div id="sumRisk">-</div></div>
-      </div>
-    </div>
-    <div style="padding: 10px 32px; display: flex; gap: 10px; background: var(--surface); border-bottom: 1px solid var(--border)">
-        <button class="btn btn-primary" onclick="readActiveDoc()" style="flex:1; justify-content:center; padding: 15px">🔊 Dokument vorlesen</button>
-        <button class="btn btn-ghost" onclick="window.speechSynthesis.cancel()" style="padding: 15px">🛑 Stop</button>
-    </div>
-    <div class="chat-window" id="chatWindow">
-      <div class="msg-row agent">
-        <div class="avatar agent-av">🤖</div>
-        <div class="bubble">
-          <div class="bubble-meta">VoiceRFQ Agent</div>
-          <p>Bereit für dein Brainstorming! Lade ein RFQ oder Dokument hoch und lass uns starten.</p>
+    <section class="workspace-header">
+      <div class="workspace-title">
+        <div id="docBanner">
+          <div class="doc-kicker">Aktives Dokument</div>
+          <div class="doc-heading">Kein Dokument aktiv</div>
+          <div class="doc-subline">Lade ein RFQ oder nutze die Testbibliothek.</div>
+        </div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="readActiveDoc()">Dokument vorlesen</button>
+          <button class="btn btn-ghost" onclick="window.speechSynthesis.cancel()">Stopp</button>
         </div>
       </div>
-    </div>
+      <div id="summaryCard" style="display:none">
+        <div class="summary-grid">
+          <div class="summary-tile"><strong>Budget/Preis</strong><span id="sumPrice">-</span></div>
+          <div class="summary-tile"><strong>Deadline</strong><span id="sumDeadline">-</span></div>
+          <div class="summary-tile"><strong>Top-Risiko</strong><span id="sumRisk">-</span></div>
+        </div>
+      </div>
+    </section>
+    <nav class="main-tabs">
+      <button class="main-tab active" data-tab="overview" onclick="switchMainTab('overview')">Übersicht</button>
+      <button class="main-tab" data-tab="chat" onclick="switchMainTab('chat')">Chat</button>
+      <button class="main-tab" data-tab="risks" onclick="switchMainTab('risks')">Risiken</button>
+      <button class="main-tab" data-tab="draft" onclick="switchMainTab('draft')">Antwortentwurf</button>
+      <button class="main-tab" data-tab="notes" onclick="switchMainTab('notes')">Notizen</button>
+    </nav>
+    <div class="main-content">
+      <section class="tab-panel dashboard-panel active" id="overviewPanel">
+        <div class="analysis-grid" id="overviewGrid"></div>
+      </section>
+      <section class="tab-panel" id="chatPanel">
+        <div class="chat-window" id="chatWindow">
+          <!-- Chat bubbles loaded here -->
+        </div>
 
-    <div class="input-bar">
-      <div class="input-container">
-        <div class="quick-chips">
-          <button class="chip" onclick="sendText('Zusammenfassung bitte')">📋 Zusammenfassung</button>
-          <button class="chip" onclick="sendText('Was sind die Risiken?')">⚠️ Risiken</button>
-          <button class="chip" onclick="sendText('Erstelle einen E-Mail Entwurf')">📧 Mail-Draft</button>
-        </div>
-        <div class="input-row">
-          <div style="position:relative; flex:1; display:flex; align-items:center">
-            <canvas id="waveform" style="position:absolute; left:70px; right:70px; height:40px; pointer-events:none; opacity:0; transition:opacity 0.3s"></canvas>
-            <button class="mic-btn" id="micBtn" onclick="toggleMic()">🎙️</button>
-            <textarea class="text-input" id="textInput" rows="1" placeholder="Frag mich was..." onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
-            <button class="send-btn" onclick="sendFromInput()">➤</button>
+        <div class="input-bar">
+          <div class="input-container">
+            <div class="quick-chips">
+              <button class="chip" onclick="sendText('Zusammenfassung bitte')">Zusammenfassung</button>
+              <button class="chip" onclick="sendText('Was sind die Risiken?')">Risiken</button>
+              <button class="chip" onclick="sendText('Erstelle einen E-Mail Entwurf')">E-Mail-Entwurf</button>
+            </div>
+            <div class="input-row">
+              <div style="position:relative; flex:1; display:flex; align-items:center">
+                <canvas id="waveform" style="position:absolute; left:70px; right:70px; height:40px; pointer-events:none; opacity:0; transition:opacity 0.3s"></canvas>
+                <button class="mic-btn" id="micBtn" onclick="toggleMic()">🎙️</button>
+                <textarea class="text-input" id="textInput" rows="1" placeholder="Frag mich was..." onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+                <button class="send-btn" onclick="sendFromInput()">➤</button>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
+      <section class="tab-panel dashboard-panel" id="risksPanel">
+        <div class="analysis-grid" id="risksGrid"></div>
+      </section>
+      <section class="tab-panel dashboard-panel" id="draftPanel">
+        <div class="analysis-grid">
+          <div class="analysis-card" style="grid-column:1 / -1">
+            <h3>Antwortentwurf</h3>
+            <textarea class="textarea-preview" id="draftText" readonly></textarea>
+            <div style="display:flex; gap:10px; margin-top:12px; flex-wrap:wrap">
+              <button class="btn btn-primary" onclick="mailDraft(document.getElementById('draftText').value)">In Mail öffnen</button>
+              <button class="btn btn-ghost" onclick="sendText('Erstelle einen professionellen Antwortentwurf zu diesem RFQ')">Mit KI verfeinern</button>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="tab-panel dashboard-panel" id="notesPanel">
+        <div class="analysis-grid" id="notesGrid"></div>
+      </section>
     </div>
   </main>
 </div>
 
 <div class="toast" id="toast"></div>
-<div style="position:fixed; bottom:10px; right:10px; font-size:0.6rem; color:var(--text-muted); pointer-events:none">v2.8 (Freedom Edition)</div>
+<div style="position:fixed; bottom:10px; right:10px; font-size:0.6rem; color:var(--text-muted); pointer-events:none">v3.0 (Persistent Edition)</div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 <script>
@@ -444,10 +579,63 @@ let recognition = null;
 let wakeRec = null;
 let msgCount = 0;
 let isDark = localStorage.getItem('vrfq_dark') === 'true';
+let isExpertMode = false;
+let activeMainTab = 'overview';
 
 let voices = [];
 
 let gcKey = localStorage.getItem('vrfq_gc_key') || '';
+
+const HELP_CONTENT = {
+  modelSource: {
+    title: 'KI-Quelle',
+    intro: 'Hier entscheidest du, welche KI die RFQs analysiert.',
+    body: '<strong>Hybrid</strong> versucht zuerst Gemini und wechselt bei Fehlern zu Ollama. <strong>Gemini</strong> nutzt die Cloud ueber deinen AI-Studio-Key. <strong>Ollama</strong> laeuft lokal auf deinem Rechner, wenn Ollama gestartet ist.'
+  },
+  aiStudio: {
+    title: 'AI Studio API Zugang',
+    intro: 'Das ist der API-Key fuer Googles Gemini Modelle aus Google AI Studio.',
+    body: 'Die Beschriftung "AI Studio API Zugang" ist genauer als nur "API Zugang", weil klar wird: Dieser Key ist fuer Gemini/KI-Antworten, nicht fuer Sprache oder Ollama. Du bekommst ihn unter <strong>aistudio.google.com/app/apikey</strong>. Fuer echte Produktivnutzung waere ein kleiner Server-Proxy sicherer als ein Key direkt im Browser.'
+  },
+  tts: {
+    title: 'Google Cloud TTS',
+    intro: 'Nutze extrem natuerliche Cloud-Stimmen (Neural2).',
+    body: 'Google schenkt dir jeden Monat 1 Million Zeichen (WaveNet/Neural2) gratis. Das reicht ewig.<br><br><strong>So bekommst du den Key:</strong><ol style="margin-left: 20px; margin-top: 10px; line-height: 1.6;"><li>Klicke auf den blauen Link im Seitenmenue ("➔ Key beantragen").</li><li>Erstelle ein Projekt (oder waehle eins) in der Google Cloud Console.</li><li>Klicke auf <strong>"Aktivieren"</strong>.</li><li>Gehe im Menue links auf <strong>"Anmeldedaten" (Credentials)</strong>.</li><li>Klicke oben auf <strong>"Anmeldedaten erstellen" -> "API-Schluessel"</strong>.</li><li>Kopiere diesen Schluessel und fuege ihn im Dashboard ein.</li></ol>'
+  },
+  expert: {
+    title: 'Expertenmodus',
+    intro: 'Ein separater Chatmodus fuer Fragen zur Einrichtung.',
+    body: 'Dieser Modus hilft bei Themen wie Ollama, lokalen Modellen, Gemini, Terminal-Tools oder Datenschutz. Er ist nicht fuer die konkrete RFQ-Auswertung optimiert.<br><br><strong>Gratis KI nutzen:</strong><ul style="margin-left:18px; margin-top:6px"><li><strong>Ollama:</strong> lokal und privat auf deinem Rechner.</li><li><strong>Gemini Free:</strong> Cloud-Nutzung ueber Google AI Studio.</li></ul><br><strong>Im Auto nutzen, z. B. ID.7:</strong><ul style="margin-left:18px; margin-top:6px"><li>Projekt ueber GitHub Pages bereitstellen.</li><li>Im Auto den Vivaldi Browser oeffnen.</li><li>Handy-Hotspot fuer Internet nutzen.</li><li>Video-/Browsernutzung nur im Stand beachten.</li></ul>'
+  },
+  voice: {
+    title: 'Stimme & Audio',
+    intro: 'Hier steuerst du Stimme und Vorlesetempo.',
+    body: 'Die verfuegbaren Stimmen kommen vom Browser und Betriebssystem. Cloud-Stimmen klingen meist besser, lokale Stimmen funktionieren dafuer ohne zusaetzlichen Dienst.'
+  },
+  analysis: {
+    title: 'Analysemodus',
+    intro: 'Der Modus lenkt die Antwort des Agenten.',
+    body: '<strong>Standard</strong> beantwortet allgemeine Fragen. <strong>Risiko</strong> sucht nach Haftung, Poenalen und Fristen. <strong>Vertrieb</strong> formuliert Antworten. <strong>Technik</strong> extrahiert Spezifikationen und Anforderungen.'
+  },
+  notes: {
+    title: 'Notizen & Highlights',
+    intro: 'Sammle wichtige Punkte dokumentuebergreifend.',
+    body: 'Notizen werden lokal im Browser gespeichert und im Bericht exportiert. Praktisch fuer Risiken, Rueckfragen, No-Bid-Gruende oder Punkte fuer die Angebotskalkulation.'
+  },
+  documents: {
+    title: 'Dokumente & Test-RFQs',
+    intro: 'Du kannst eigene Dateien hochladen oder die Testbibliothek nutzen.',
+    body: 'Unterstuetzt werden Textdateien, PDFs und Word-Dokumente. Die Test-RFQs sind bewusst sehr unterschiedlich, damit du Analysemodus, Risiken, Fristen und Branchenlogik besser vergleichen kannst.'
+  }
+};
+
+const SAMPLE_RFQS = [
+  { name: 'Maschinenbau - Fertigungslinie', file: 'rfqs/01_maschinenbau_fertigungslinie.txt' },
+  { name: 'Medizintechnik - Reinraum Sensorik', file: 'rfqs/02_medizintechnik_reinraum_sensorik.txt' },
+  { name: 'SaaS - CRM Migration', file: 'rfqs/03_saas_crm_migration.txt' },
+  { name: 'Bauprojekt - Hotel Klimatechnik', file: 'rfqs/04_bauprojekt_hotel_klimatechnik.txt' },
+  { name: 'Energie - Batteriespeicher', file: 'rfqs/05_energie_batteriespeicher.txt' }
+];
 
 (function init() {
   if (isDark) document.body.classList.add('dark');
@@ -458,10 +646,16 @@ let gcKey = localStorage.getItem('vrfq_gc_key') || '';
   if (gcKey) document.getElementById('gcKeyInput').value = gcKey;
   
   // Lade Ollama Einstellungen
+  const savedSource = localStorage.getItem('vrfq_model_source');
+  const savedMode = localStorage.getItem('vrfq_analysis_mode');
   const savedHost = localStorage.getItem('vrfq_ollama_host');
   const savedModels = localStorage.getItem('vrfq_ollama_models');
+  if (savedSource) document.getElementById('modelSource').value = savedSource;
+  if (savedMode) document.getElementById('analysisMode').value = savedMode;
   if (savedHost) document.getElementById('ollamaHost').value = savedHost;
   if (savedModels) document.getElementById('ollamaModel').value = savedModels;
+  toggleModelSource(false);
+  updateModeButtons();
 
   // Lade gespeicherte Dokumente
   const savedDocs = localStorage.getItem('vrfq_docs');
@@ -469,10 +663,22 @@ let gcKey = localStorage.getItem('vrfq_gc_key') || '';
     try {
       docs = JSON.parse(savedDocs);
       renderDocs();
-      if (docs.length) setActiveDoc(docs[0].id);
-    } catch(e) {}
+      if (docs.length) {
+        const lastActiveId = localStorage.getItem('vrfq_active_id');
+        if (lastActiveId && docs.find(d => d.id == lastActiveId)) {
+          setActiveDoc(lastActiveId);
+        } else {
+          setActiveDoc(docs[0].id);
+        }
+      } else {
+        showWelcomeMessage();
+      }
+    } catch(e) { showWelcomeMessage(); }
+  } else {
+    showWelcomeMessage();
   }
   updateNotesDisplay();
+  renderSampleList();
 
   setupRecognition();
   
@@ -488,6 +694,13 @@ let gcKey = localStorage.getItem('vrfq_gc_key') || '';
   zone.addEventListener('dragleave', () => zone.style.borderColor = 'var(--border)');
   zone.addEventListener('drop', e => { e.preventDefault(); zone.style.borderColor = 'var(--border)'; handleFiles(e.dataTransfer.files); });
 })();
+
+function showWelcomeMessage() {
+  const win = document.getElementById('chatWindow');
+  win.textContent = '';
+  renderBubble("Bereit für dein Brainstorming! Lade ein RFQ oder Dokument hoch und lass uns starten.", 'agent', false);
+  renderAnalysisViews();
+}
 
 function populateVoices() {
   const allVoices = window.speechSynthesis.getVoices();
@@ -517,11 +730,29 @@ function updateSpeechParams() {
   document.getElementById('rateVal').textContent = document.getElementById('rateRange').value;
 }
 
+function setAnalysisMode(mode) {
+  document.getElementById('analysisMode').value = mode;
+  localStorage.setItem('vrfq_analysis_mode', mode);
+  updateModeButtons();
+  showToast('Arbeitsmodus aktualisiert');
+}
+
+function updateModeButtons() {
+  const selected = document.getElementById('analysisMode').value;
+  document.querySelectorAll('.mode-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.mode === selected);
+  });
+}
+
 function toggleDarkMode() {
   isDark = !isDark;
   document.body.classList.toggle('dark', isDark);
   localStorage.setItem('vrfq_dark', isDark);
   document.getElementById('darkToggle').textContent = isDark ? '☀️' : '🌙';
+}
+
+function refreshApp() {
+  window.location.reload();
 }
 
 function saveDocsToStorage() {
@@ -551,20 +782,42 @@ function updateNotesDisplay() {
   const container = document.getElementById('notesContainer');
   if (!container) return;
   let notes = JSON.parse(localStorage.getItem('vrfq_notes') || '[]');
-  if (notes.length === 0) { container.innerHTML = 'Noch keine Notizen...'; return; }
-  container.innerHTML = notes.slice(-5).reverse().map(n => `
-    <div style="margin-bottom:8px; padding-bottom:4px; border-bottom:1px solid var(--border); font-size:0.7rem">
-      <div style="font-weight:700; font-size:0.6rem; color:var(--accent)">${n.doc}</div>
-      • ${n.text}
-    </div>
-  `).join('');
+  container.textContent = '';
+  if (notes.length === 0) { container.textContent = 'Noch keine Notizen...'; return; }
+  notes.slice(-5).reverse().forEach(n => {
+    const item = document.createElement('div');
+    item.style.cssText = 'margin-bottom:8px; padding-bottom:4px; border-bottom:1px solid var(--border); font-size:0.7rem';
+    const doc = document.createElement('div');
+    doc.style.cssText = 'font-weight:700; font-size:0.6rem; color:var(--accent)';
+    doc.textContent = n.doc;
+    const text = document.createElement('div');
+    text.textContent = `• ${n.text}`;
+    item.append(doc, text);
+    container.appendChild(item);
+  });
+  renderAnalysisViews();
 }
 
 function exportReport() {
   let notes = JSON.parse(localStorage.getItem('vrfq_notes') || '[]');
-  if (notes.length === 0) { showToast('Keine Notizen zum Exportieren!', 'error'); return; }
+  if (notes.length === 0 && docs.length === 0) { showToast('Keine Inhalte zum Exportieren!', 'error'); return; }
   
   let md = `# RFQ Analyse-Bericht\nErstellt am: ${new Date().toLocaleString('de-DE')}\n\n`;
+
+  if (docs.length) {
+    md += `## Dokumentuebersicht\n`;
+    docs.forEach(d => {
+      md += `### ${d.name}\n`;
+      if (d.summary) {
+        md += `- Preis/Budget: ${d.summary.price || 'N/A'}\n`;
+        md += `- Deadline: ${d.summary.deadline || 'N/A'}\n`;
+        md += `- Top-Risiko: ${d.summary.topRisk || 'N/A'}\n`;
+      } else {
+        md += `- Noch keine Zusammenfassung vorhanden\n`;
+      }
+      md += `\n`;
+    });
+  }
   
   // Gruppieren nach Dokumenten
   const grouped = notes.reduce((acc, n) => {
@@ -573,12 +826,15 @@ function exportReport() {
     return acc;
   }, {});
   
-  for (const doc in grouped) {
-    md += `## 📄 Dokument: ${doc}\n`;
-    grouped[doc].forEach(n => {
-      md += `- [${n.t}] ${n.text}\n`;
-    });
-    md += `\n`;
+  if (notes.length) {
+    md += `## Notizen und Highlights\n`;
+    for (const doc in grouped) {
+      md += `### Dokument: ${doc}\n`;
+      grouped[doc].forEach(n => {
+        md += `- [${n.t}] ${n.text}\n`;
+      });
+      md += `\n`;
+    }
   }
   
   const blob = new Blob([md], {type: 'text/markdown'});
@@ -594,10 +850,24 @@ function exportReport() {
 // ══════════════════════════════════════════════════════════════
 function saveApiKey() {
   const v = document.getElementById('apiKeyInput').value.trim();
+  if (!v) {
+    apiKey = '';
+    localStorage.removeItem('vrfq_key');
+    showToast('AI-Studio-Key entfernt');
+    return;
+  }
   if (!v.startsWith('AIza') && !v.startsWith('AQ.')) { showToast('Ungültiger Key!', 'error'); return; }
   apiKey = v;
   localStorage.setItem('vrfq_key', v);
-  showToast('Key gespeichert! ✅');
+  showToast('AI-Studio-Key gespeichert!');
+}
+
+function saveGcKey() {
+  const v = document.getElementById('gcKeyInput').value.trim();
+  gcKey = v;
+  if (v) localStorage.setItem('vrfq_gc_key', v);
+  else localStorage.removeItem('vrfq_gc_key');
+  showToast(v ? 'Google-Cloud-TTS-Key gespeichert!' : 'Google-Cloud-TTS-Key entfernt');
 }
 
 async function handleFiles(files) {
@@ -611,7 +881,7 @@ async function handleFiles(files) {
       else content = await readText(f);
 
       const id = Date.now() + Math.random();
-      docs.push({ id, name: f.name, content });
+      docs.push({ id, name: f.name, content, chat: [], history: [], summary: extractLocalSummary(content) });
       saveDocsToStorage();
       renderDocs();
       setActiveDoc(id);
@@ -624,6 +894,14 @@ async function handleFiles(files) {
 }
 
 async function runAutoAnalysis(content) {
+  const localSummary = extractLocalSummary(content);
+  updateSummaryCard(localSummary);
+  const activeDoc = docs.find(d => d.id == activeDocId);
+  if (activeDoc) {
+    activeDoc.summary = localSummary;
+    saveDocsToStorage();
+  }
+
   const source = document.getElementById('modelSource').value;
   if (source === 'gemini' && !apiKey) return;
   
@@ -633,7 +911,7 @@ async function runAutoAnalysis(content) {
   
   try {
     let raw = '';
-    if (source === 'hybrid' || source === 'gemini') {
+    if ((source === 'hybrid' && apiKey) || source === 'gemini') {
       raw = await callGemini(prompt, system);
     } else {
       const model = document.getElementById('ollamaModel').value.split(',')[0].trim();
@@ -644,6 +922,11 @@ async function runAutoAnalysis(content) {
     if (jsonMatch) {
       const data = JSON.parse(jsonMatch[0]);
       updateSummaryCard(data);
+      const d = docs.find(x => x.id == activeDocId);
+      if (d) {
+        d.summary = data;
+        saveDocsToStorage();
+      }
     }
   } catch(e) { console.warn('Auto-Analyse fehlgeschlagen'); }
 }
@@ -653,6 +936,91 @@ function updateSummaryCard(data) {
   document.getElementById('sumPrice').textContent = data.price || 'N/A';
   document.getElementById('sumDeadline').textContent = data.deadline || 'N/A';
   document.getElementById('sumRisk').textContent = data.topRisk || 'N/A';
+  renderAnalysisViews();
+}
+
+function extractLocalSummary(content) {
+  const normalized = content.replace(/\s+/g, ' ');
+  const deadlinePatterns = [
+    /Angebot(?:sabgabe)?\s*(?:bis|bis zum)?\s*([0-9]{1,2}\.\s*[A-Za-zäöüÄÖÜ]+\s*[0-9]{4})/i,
+    /Richtangebot\s*bis\s*([0-9]{1,2}\.\s*[A-Za-zäöüÄÖÜ]+\s*[0-9]{4})/i,
+    /Wir erwarten Ihr Angebot bis zum\s*([0-9]{1,2}\.\s*[A-Za-zäöüÄÖÜ]+\s*[0-9]{4})/i
+  ];
+  const deadline = deadlinePatterns.map(p => normalized.match(p)?.[1]).find(Boolean) || 'Keine klare Angebotsfrist erkannt';
+
+  const riskSignals = [
+    { test: /Vertragsstrafe|P[oö]nale|penalty/i, text: 'Vertragsstrafe/Pönale prüfen' },
+    { test: /Gew[aä]hrleistung\s*(?:von|nach)?\s*(?:[0-9]{2}|5 Jahre|48 Monate)/i, text: 'Lange Gewährleistung' },
+    { test: /60 Tage netto|Zahlungsziel 60/i, text: 'Langes Zahlungsziel' },
+    { test: /Audit|ISO 13485|GMP|Validierung|TOMs|AVV/i, text: 'Compliance-/Audit-Anforderungen' },
+    { test: /Inbetriebnahme|Go-Live|Downtime|Verf[uü]gbarkeitsgarantie/i, text: 'Termin-/Service-Level-Risiko' }
+  ];
+  const topRisk = riskSignals.find(r => r.test.test(normalized))?.text || 'Kein offensichtliches Top-Risiko erkannt';
+
+  const price = /Budget|Preis|Kosten|Lizenzkosten|Auftragssumme/i.test(normalized)
+    ? 'Preis-/Budgetangaben im Dokument prüfen'
+    : 'Kein Budget genannt';
+
+  const delivery = (
+    normalized.match(/(?:Lieferung|Inbetriebnahme|Go-Live|Montagefenster).*?(?:bis|:)\s*([^.;\n-]+[0-9]{4})/i)?.[1] ||
+    normalized.match(/bis spaetestens\s*([^.;\n-]+[0-9]{4})/i)?.[1] ||
+    'Nicht eindeutig erkannt'
+  ).trim();
+  const payment = normalized.match(/(?:Zahlungsziel|Zahlungsbedingungen|[0-9]{2}\s*Tage netto)[^.;\n]*/i)?.[0] || 'Nicht genannt';
+  const warranty = normalized.match(/(?:Gew[aä]hrleistung|Garantie|Verf[uü]gbarkeitsgarantie)[^.;\n]*/i)?.[0] || 'Nicht genannt';
+  const incoterms = normalized.match(/\b(?:DDP|DAP|EXW|FCA|CPT|CIP|FOB|CIF)\b[^.;\n]*/i)?.[0] || 'Nicht genannt';
+  const compliance = [
+    /ISO 9001/i.test(normalized) ? 'ISO 9001' : '',
+    /ISO 13485/i.test(normalized) ? 'ISO 13485' : '',
+    /GMP/i.test(normalized) ? 'GMP' : '',
+    /AVV|TOMs|DSGVO/i.test(normalized) ? 'Datenschutz/AVV/TOMs' : '',
+    /Audit/i.test(normalized) ? 'Audit-Vorbehalt' : ''
+  ].filter(Boolean);
+  const risks = riskSignals.filter(r => r.test.test(normalized)).map(r => r.text);
+  const questions = [
+    price === 'Kein Budget genannt' ? 'Gibt es ein Zielbudget oder eine Preisobergrenze?' : '',
+    payment === 'Nicht genannt' ? 'Welche Zahlungsbedingungen gelten?' : '',
+    incoterms === 'Nicht genannt' ? 'Welche Lieferbedingung/Incoterms sind gefordert?' : '',
+    warranty === 'Nicht genannt' ? 'Welche Gewährleistungs- oder Servicepflichten gelten?' : ''
+  ].filter(Boolean);
+  const recommendation = risks.length >= 2 ? 'Pruefen vor Angebotsfreigabe' : 'Grundsaetzlich bearbeitbar';
+
+  const positions = extractPositions(content);
+
+  return { price, deadline, topRisk, delivery, payment, warranty, incoterms, compliance, risks, questions, recommendation, positions };
+}
+
+function extractPositions(content) {
+  const lines = content.split(/\r?\n/);
+  const positions = [];
+  let current = null;
+
+  lines.forEach(rawLine => {
+    const line = rawLine.trim();
+    if (!line) return;
+    const posMatch = line.match(/^(?:\d+\.\s*)?(?:POSITION:\s*)?(.+?)(?:\s{2,}|$)/i);
+    const startsPosition = /^(?:\d+\.\s*)?POSITION:/i.test(line) || /^\d+\.\s+[A-ZÄÖÜa-zäöü].+/.test(line);
+
+    if (startsPosition && !/^(?:\d+\.\s*)?(?:Laufzeit|Umfang|Anforderungen|Spezifikationen|Genauigkeit|Auslegung|Schnittstellen):/i.test(line)) {
+      if (current) positions.push(current);
+      current = { name: (line.replace(/^\d+\.\s*/, '').replace(/^POSITION:\s*/i, '') || posMatch?.[1] || 'Position').trim(), qty: '-', spec: '' };
+      return;
+    }
+
+    if (!current) return;
+    const qty = line.match(/^(?:Menge|Leistung|Kapazit[aä]t|Laufzeit):\s*(.+)$/i);
+    if (qty && current.qty === '-') {
+      current.qty = qty[1].trim();
+      return;
+    }
+    const spec = line.match(/^(?:Spezifikationen|Anforderungen|Genauigkeit|Umfang|Auslegung|Schnittstellen):\s*(.+)$/i);
+    if (spec) {
+      current.spec = current.spec ? `${current.spec}; ${spec[1].trim()}` : spec[1].trim();
+    }
+  });
+
+  if (current) positions.push(current);
+  return positions.slice(0, 8);
 }
 
 async function readPDF(file) {
@@ -683,38 +1051,126 @@ function readText(file) {
 
 function renderDocs() {
   const container = document.getElementById('docTabs');
-  container.innerHTML = docs.length ? '' : '<div style="text-align:center; color:var(--text-muted); font-size:0.8rem; margin-top:20px">Keine Dokumente</div>';
+  container.textContent = '';
+  if (!docs.length) {
+    const empty = document.createElement('div');
+    empty.style.cssText = 'text-align:center; color:var(--text-muted); font-size:0.8rem; margin-top:20px';
+    empty.textContent = 'Keine Dokumente';
+    container.appendChild(empty);
+  }
   docs.forEach(d => {
     const div = document.createElement('div');
     div.className = 'doc-tab' + (d.id === activeDocId ? ' active' : '');
-    div.innerHTML = `<span>📄</span> <span class="doc-name">${d.name}</span> <span class="doc-remove" onclick="removeDoc('${d.id}', event)">✕</span>`;
+    const icon = document.createElement('span');
+    icon.textContent = '📄';
+    const name = document.createElement('span');
+    name.className = 'doc-name';
+    name.textContent = d.name;
+    const remove = document.createElement('span');
+    remove.className = 'doc-remove';
+    remove.textContent = '✕';
+    remove.onclick = event => removeDoc(d.id, event);
+    div.append(icon, name, remove);
     div.onclick = () => setActiveDoc(d.id);
     container.appendChild(div);
   });
 }
 
+function sampleExists(sample) {
+  return docs.some(d => d.sampleFile === sample.file || d.name === sample.name);
+}
+
 function setActiveDoc(id) {
   activeDocId = id;
+  if (id) localStorage.setItem('vrfq_active_id', id);
   const d = docs.find(x => x.id == id);
-  document.getElementById('docBanner').innerHTML = d ? `📋 Aktives Dokument: <strong>${d.name}</strong>` : '📋 Kein Dokument aktiv';
-  history = []; // Reset context for new doc
+  if (d && (!d.summary || !Array.isArray(d.summary.positions))) {
+    d.summary = extractLocalSummary(d.content || '');
+    saveDocsToStorage();
+  }
+  const banner = document.getElementById('docBanner');
+  banner.textContent = '';
+  if (d) {
+    const kicker = document.createElement('div');
+    kicker.className = 'doc-kicker';
+    kicker.textContent = 'Aktives Dokument';
+    const heading = document.createElement('div');
+    heading.className = 'doc-heading';
+    heading.textContent = d.name;
+    const subline = document.createElement('div');
+    subline.className = 'doc-subline';
+    subline.textContent = d.summary ? `${d.summary.recommendation || 'Analyse bereit'} · ${d.summary.deadline || 'Keine Frist erkannt'}` : 'Noch keine Analyse vorhanden';
+    banner.append(kicker, heading, subline);
+    if (d.summary) updateSummaryCard(d.summary);
+    else document.getElementById('summaryCard').style.display = 'none';
+  } else {
+    const kicker = document.createElement('div');
+    kicker.className = 'doc-kicker';
+    kicker.textContent = 'Aktives Dokument';
+    const heading = document.createElement('div');
+    heading.className = 'doc-heading';
+    heading.textContent = 'Kein Dokument aktiv';
+    const subline = document.createElement('div');
+    subline.className = 'doc-subline';
+    subline.textContent = 'Lade ein RFQ oder nutze die Testbibliothek.';
+    banner.append(kicker, heading, subline);
+    document.getElementById('summaryCard').style.display = 'none';
+  }
+  
+  // Chat-Verlauf wiederherstellen
+  const win = document.getElementById('chatWindow');
+  win.textContent = '';
+  
+  if (d && d.chat && d.chat.length > 0) {
+    history = d.history || [];
+    d.chat.forEach(msg => {
+      renderBubble(msg.text, msg.role, false);
+    });
+  } else {
+    history = [];
+    addBubble("Bereit für dein Brainstorming! Lade ein RFQ oder Dokument hoch und lass uns starten.", 'agent', true);
+  }
+  
   renderDocs();
+  renderAnalysisViews();
 }
 
 function removeDoc(id, e) {
   e.stopPropagation();
   docs = docs.filter(x => x.id != id);
   saveDocsToStorage();
-  if (activeDocId == id) activeDocId = docs.length ? docs[0].id : null;
+  if (activeDocId == id) {
+    activeDocId = docs.length ? docs[0].id : null;
+    if (activeDocId) localStorage.setItem('vrfq_active_id', activeDocId);
+    else localStorage.removeItem('vrfq_active_id');
+  }
+  if (!activeDocId) showWelcomeMessage();
   setActiveDoc(activeDocId);
+}
+
+function resetDemo() {
+  if (!confirm('Demo wirklich zurücksetzen? Dokumente, Chats und Notizen werden gelöscht.')) return;
+  docs = [];
+  activeDocId = null;
+  history = [];
+  localStorage.removeItem('vrfq_docs');
+  localStorage.removeItem('vrfq_active_id');
+  localStorage.removeItem('vrfq_notes');
+  renderDocs();
+  updateNotesDisplay();
+  showWelcomeMessage();
+  renderAnalysisViews();
+  showToast('Demo zurückgesetzt');
 }
 
 // ══════════════════════════════════════════════════════════════
 // GEMINI & OLLAMA API
 // ══════════════════════════════════════════════════════════════
-function toggleModelSource() {
+function toggleModelSource(showSavedToast = true) {
   const src = document.getElementById('modelSource').value;
+  localStorage.setItem('vrfq_model_source', src);
   document.getElementById('ollamaConfig').style.display = (src === 'gemini' ? 'none' : 'block');
+  if (showSavedToast) showToast('KI-Quelle gespeichert');
 }
 
 async function sendText(text) {
@@ -739,13 +1195,22 @@ async function sendText(text) {
     const mode = document.getElementById('analysisMode').value;
     
     let system = 'Du bist ein professioneller Vertriebs-Assistent. Antworte präzise auf Deutsch.';
-    if (mode === 'risk') system = 'Analysiere das Dokument kritisch auf Risiken wie Pönalen, Haftungsgrenzen, Kündigungsfristen und Lieferverzug. Antworte strukturiert und warnend.';
-    if (mode === 'sales') system = 'Entwirf eine professionelle, höfliche Antwort-Email an den Kunden basierend auf den RFQ-Daten. Fokus auf Kundenbindung und Kompetenz.';
-    if (mode === 'tech') system = 'Extrahiere alle technischen Parameter, Maße, Leistungen und Anforderungen aus dem Text. Antworte in einer sauberen Liste.';
-
-    if (activeDoc) system += `\n\nDokument-Kontext: ${activeDoc.content.substring(0, 7000)}`;
     
-    if (source === 'hybrid' || source === 'gemini') {
+    if (isExpertMode) {
+      system = `Du bist ein KI-Experte und Berater für kostenlose Terminal-Tools und lokale KI-Modelle. 
+      Dein Ziel ist es, dem Nutzer zu helfen, Tools wie Ollama, Gemini CLI, Groq und Aider einzurichten und optimal zu nutzen.
+      Erkläre die Vorteile von lokalen Modellen (Privatsphäre, keine Kosten) und wie man sie im Terminal bedient.
+      Bleibe freundlich, hilfsbereit und technisch versiert, aber erkläre es so, dass es auch Anfänger verstehen.
+      Wenn der Nutzer fragt, was er tun soll, empfehle Ollama für lokale Nutzung oder Gemini für die Cloud.`;
+    } else {
+      if (mode === 'risk') system = 'Analysiere das Dokument kritisch auf Risiken wie Pönalen, Haftungsgrenzen, Kündigungsfristen und Lieferverzug. Antworte strukturiert und warnend.';
+      if (mode === 'sales') system = 'Entwirf eine professionelle, höfliche Antwort-Email an den Kunden basierend auf den RFQ-Daten. Fokus auf Kundenbindung und Kompetenz.';
+      if (mode === 'tech') system = 'Extrahiere alle technischen Parameter, Maße, Leistungen und Anforderungen aus dem Text. Antworte in einer sauberen Liste.';
+    }
+
+    if (activeDoc && !isExpertMode) system += `\n\nDokument-Kontext: ${activeDoc.content.substring(0, 7000)}`;
+    
+    if ((source === 'hybrid' && apiKey) || source === 'gemini') {
       try {
         const reply = await callGemini(text, system);
         handleReply(reply, typingId, 'gemini');
@@ -773,6 +1238,15 @@ async function sendText(text) {
     removeTyping(typingId);
     addBubble('❌ Fehler: ' + e.message, 'agent');
   }
+}
+
+function startExpertChat() {
+  isExpertMode = true;
+  switchMainTab('chat');
+  addBubble("Hallo! Ich bin dein KI-Experte. Frag mich alles zu Ollama, Gemini CLI, Groq oder wie du KI kostenlos im Terminal nutzt. Wie kann ich dir helfen?", 'agent');
+  speakText("Hallo! Ich bin dein KI-Experte. Frag mich alles zu kostenlosen KI-Tools.");
+  document.getElementById('textInput').placeholder = "Frag den KI-Experten...";
+  showToast("Experten-Modus aktiviert! 💡");
 }
 
 async function callGemini(text, system) {
@@ -815,10 +1289,19 @@ async function callOllama(text, system, model) {
 function handleReply(reply, typingId, actualSource) {
   removeTyping(typingId);
   playBeep('success');
-  addBubble(reply, 'agent');
-  history.push({ role: actualSource === 'gemini' ? 'model' : 'assistant', parts: [{ text: reply }] });
-  speakText(reply);
+  addBubble(reply, 'agent', true);
   
+  const role = actualSource === 'gemini' ? 'model' : 'assistant';
+  history.push({ role: role, parts: [{ text: reply }] });
+  
+  // History im aktuellen Doc speichern
+  const d = docs.find(x => x.id == activeDocId);
+  if (d) {
+    d.history = history;
+    saveDocsToStorage();
+  }
+  
+  speakText(reply);
   if (wakeActive) {
     setTimeout(() => { if (!isListening && !isSpeaking) toggleMic(); }, 1500);
   }
@@ -1007,15 +1490,54 @@ function readActiveDoc() {
   speakText(`Dokument ${d.name}: ` + d.content);
 }
 
-function addBubble(text, role) {
+function addBubble(text, role, shouldSave = true) {
+  renderBubble(text, role, shouldSave);
+  
+  if (shouldSave && activeDocId) {
+    const d = docs.find(x => x.id == activeDocId);
+    if (d) {
+      if (!d.chat) d.chat = [];
+      d.chat.push({ text, role });
+      saveDocsToStorage();
+    }
+  }
+}
+
+function renderBubble(text, role, animate = true) {
   const win = document.getElementById('chatWindow');
   const row = document.createElement('div');
   row.className = `msg-row ${role}`;
-  let actions = '';
-  if (role === 'agent') {
-    actions = `<button class="chip" style="margin-top:8px; font-size:0.7rem" onclick="mailDraft(\`${text.replace(/[`]/g, "'")}\`)">📧 In Mail öffnen</button>`;
+  if (!animate) row.style.animation = 'none';
+
+  const avatar = document.createElement('div');
+  avatar.className = `avatar ${role}-av`;
+  avatar.textContent = role === 'user' ? '👤' : '🤖';
+
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
+
+  const meta = document.createElement('div');
+  meta.className = 'bubble-meta';
+  meta.textContent = role === 'user' ? 'Du' : 'Agent';
+
+  const paragraph = document.createElement('p');
+  text.split('\n').forEach((line, index) => {
+    if (index) paragraph.appendChild(document.createElement('br'));
+    paragraph.appendChild(document.createTextNode(line));
+  });
+
+  bubble.append(meta, paragraph);
+
+  if (role === 'agent' && !text.includes('Bereit für dein Brainstorming')) {
+    const action = document.createElement('button');
+    action.className = 'chip';
+    action.style.cssText = 'margin-top:8px; font-size:0.7rem';
+    action.textContent = '📧 In Mail öffnen';
+    action.onclick = () => mailDraft(text);
+    bubble.appendChild(action);
   }
-  row.innerHTML = `<div class="avatar ${role}-av">${role==='user'?'👤':'🤖'}</div><div class="bubble"><div class="bubble-meta">${role==='user'?'Du':'Agent'}</div><p>${text.replace(/\n/g, '<br>')}</p>${actions}</div>`;
+
+  row.append(avatar, bubble);
   win.appendChild(row);
   win.scrollTop = win.scrollHeight;
 }
@@ -1034,31 +1556,252 @@ function showTyping() {
 }
 
 function removeTyping(id) { const el = document.getElementById(id); if(el) el.remove(); }
+function switchMainTab(tab) {
+  activeMainTab = tab;
+  document.querySelectorAll('.main-tab').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tab));
+  document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
+  const panel = document.getElementById(tab + 'Panel');
+  if (panel) panel.classList.add('active');
+}
+
+function getActiveDoc() {
+  return docs.find(x => x.id == activeDocId);
+}
+
+function clearAndAppend(container, child) {
+  container.textContent = '';
+  container.appendChild(child);
+}
+
+function makeEmptyState(message) {
+  const box = document.createElement('div');
+  box.className = 'empty-state';
+  box.textContent = message;
+  return box;
+}
+
+function makeAnalysisCard(title, rows) {
+  const card = document.createElement('div');
+  card.className = 'analysis-card';
+  const heading = document.createElement('h3');
+  heading.textContent = title;
+  const list = document.createElement('div');
+  list.className = 'analysis-list';
+  rows.forEach(row => {
+    if (Array.isArray(row)) {
+      const line = document.createElement('div');
+      line.className = 'analysis-row';
+      const label = document.createElement('span');
+      label.textContent = row[0];
+      const value = document.createElement('span');
+      value.textContent = row[1] || 'N/A';
+      line.append(label, value);
+      list.appendChild(line);
+    } else {
+      const item = document.createElement('div');
+      item.textContent = row;
+      list.appendChild(item);
+    }
+  });
+  card.append(heading, list);
+  return card;
+}
+
+function makePositionsCard(positions) {
+  const card = document.createElement('div');
+  card.className = 'analysis-card';
+  card.style.gridColumn = '1 / -1';
+  const heading = document.createElement('h3');
+  heading.textContent = 'Positionen';
+  card.appendChild(heading);
+
+  if (!positions || !positions.length) {
+    const empty = document.createElement('div');
+    empty.className = 'analysis-list';
+    empty.textContent = 'Keine strukturierten Positionen erkannt.';
+    card.appendChild(empty);
+    return card;
+  }
+
+  const table = document.createElement('table');
+  table.className = 'positions-table';
+  const thead = document.createElement('thead');
+  const headRow = document.createElement('tr');
+  ['Position', 'Menge/Umfang', 'Spezifikation'].forEach(label => {
+    const th = document.createElement('th');
+    th.textContent = label;
+    headRow.appendChild(th);
+  });
+  thead.appendChild(headRow);
+  const tbody = document.createElement('tbody');
+  positions.forEach(pos => {
+    const tr = document.createElement('tr');
+    [pos.name, pos.qty, pos.spec || 'Keine Spezifikation erkannt'].forEach(value => {
+      const td = document.createElement('td');
+      td.textContent = value;
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+  table.append(thead, tbody);
+  card.appendChild(table);
+  return card;
+}
+
+function renderAnalysisViews() {
+  const d = getActiveDoc();
+  renderOverview(d);
+  renderRisks(d);
+  renderDraft(d);
+  renderNotesPanel();
+}
+
+function renderOverview(d) {
+  const grid = document.getElementById('overviewGrid');
+  if (!grid) return;
+  grid.textContent = '';
+  if (!d) {
+    clearAndAppend(grid, makeEmptyState('Noch kein RFQ aktiv. Lade links ein Test-RFQ oder ein eigenes Dokument.'));
+    return;
+  }
+  const s = d.summary || extractLocalSummary(d.content || '');
+  grid.append(
+    makeAnalysisCard('Kerninformationen', [
+      ['Angebotsfrist', s.deadline],
+      ['Liefertermin / Go-Live', s.delivery],
+      ['Preis / Budget', s.price],
+      ['Empfehlung', s.recommendation]
+    ]),
+    makeAnalysisCard('Kaufmännische Bedingungen', [
+      ['Zahlung', s.payment],
+      ['Gewährleistung / Service', s.warranty],
+      ['Incoterms', s.incoterms],
+      ['Top-Risiko', s.topRisk]
+    ]),
+    makeAnalysisCard('Compliance', (s.compliance && s.compliance.length) ? s.compliance : ['Keine klare Compliance-Anforderung erkannt']),
+    makeAnalysisCard('Offene Rückfragen', (s.questions && s.questions.length) ? s.questions : ['Keine Standard-Rückfragen erkannt']),
+    makePositionsCard(s.positions)
+  );
+}
+
+function renderRisks(d) {
+  const grid = document.getElementById('risksGrid');
+  if (!grid) return;
+  grid.textContent = '';
+  if (!d) {
+    clearAndAppend(grid, makeEmptyState('Risiken erscheinen hier, sobald ein RFQ aktiv ist.'));
+    return;
+  }
+  const s = d.summary || extractLocalSummary(d.content || '');
+  const risks = (s.risks && s.risks.length) ? s.risks : [s.topRisk || 'Kein offensichtliches Top-Risiko erkannt'];
+  grid.append(
+    makeAnalysisCard('Priorisierte Risiken', risks),
+    makeAnalysisCard('Prüfpunkte vor Angebot', [
+      ['Vertragsstrafe', /P[oö]nale|Vertragsstrafe/i.test(d.content) ? 'Ja, prüfen' : 'Nicht erkannt'],
+      ['Langes Zahlungsziel', /60 Tage netto|Zahlungsziel 60/i.test(d.content) ? 'Ja, Liquidität prüfen' : 'Nicht erkannt'],
+      ['Lange Gewährleistung', /48 Monate|5 Jahre|36 Monate/i.test(d.content) ? 'Ja, Kosten einpreisen' : 'Nicht erkannt'],
+      ['Compliance', (s.compliance && s.compliance.length) ? s.compliance.join(', ') : 'Nicht erkannt']
+    ])
+  );
+}
+
+function renderDraft(d) {
+  const area = document.getElementById('draftText');
+  if (!area) return;
+  if (!d) {
+    area.value = 'Lade zuerst ein RFQ, dann erscheint hier ein erster Antwortentwurf.';
+    return;
+  }
+  const s = d.summary || extractLocalSummary(d.content || '');
+  area.value = `Sehr geehrte Damen und Herren,\n\nvielen Dank fuer Ihre Anfrage \"${d.name}\". Wir pruefen die Anforderungen und bereiten ein strukturiertes Angebot vor.\n\nNach erster Sichtung sehen wir folgende Punkte fuer die Klaerung:\n- Angebotsfrist: ${s.deadline}\n- Liefertermin / Go-Live: ${s.delivery}\n- Kaufmaennische Bedingungen: ${s.payment}\n- Gewaehrleistung / Service: ${s.warranty}\n- Wesentliches Risiko: ${s.topRisk}\n\nBitte bestaetigen Sie uns noch offene Rahmenbedingungen, insbesondere Zielbudget, finale Lieferbedingungen und etwaige zwingende Vertragsvorgaben.\n\nMit freundlichen Gruessen`;
+}
+
+function renderNotesPanel() {
+  const grid = document.getElementById('notesGrid');
+  if (!grid) return;
+  grid.textContent = '';
+  const notes = JSON.parse(localStorage.getItem('vrfq_notes') || '[]');
+  if (!notes.length) {
+    clearAndAppend(grid, makeEmptyState('Noch keine Notizen vorhanden. Nutze links die Notizfunktion oder diktiere "Notiere: ...".'));
+    return;
+  }
+  const grouped = notes.reduce((acc, n) => {
+    if (!acc[n.doc]) acc[n.doc] = [];
+    acc[n.doc].push(`[${n.t}] ${n.text}`);
+    return acc;
+  }, {});
+  Object.entries(grouped).forEach(([doc, items]) => grid.appendChild(makeAnalysisCard(doc, items)));
+}
+
 function showToast(m, type='') {
   const t = document.getElementById('toast');
   t.textContent = m; t.className = 'toast show' + (type?' '+type:'');
   setTimeout(() => t.classList.remove('show'), 3000);
 }
 function autoResize(el) { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 150) + 'px'; }
-function openModal() { document.getElementById('modalOverlay').classList.add('open'); }
+function openHelp(key) {
+  const help = HELP_CONTENT[key] || HELP_CONTENT.aiStudio;
+  document.getElementById('modalTitle').textContent = help.title;
+  document.getElementById('modalIntro').textContent = help.intro;
+  document.getElementById('modalBody').innerHTML = help.body;
+  document.getElementById('modalOverlay').style.zIndex = '1200';
+  document.getElementById('modalOverlay').classList.add('open');
+}
+function openModal() { openHelp('aiStudio'); }
 function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
 function closeModalBg(e) { if(e.target.id === 'modalOverlay') closeModal(); }
+function openSettings() { document.getElementById('settingsOverlay').classList.add('open'); }
+function closeSettings() { document.getElementById('settingsOverlay').classList.remove('open'); }
+function closeSettingsBg(e) { if(e.target.id === 'settingsOverlay') closeSettings(); }
 function exportSession() {
   let txt = docs.map(d => `--- ${d.name} ---\n${d.content}`).join('\n\n');
   const blob = new Blob([txt], {type: 'text/plain'});
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'export.txt'; a.click();
 }
-async function loadSample() {
+function renderSampleList() {
+  const list = document.getElementById('sampleList');
+  if (!list) return;
+  list.textContent = '';
+  SAMPLE_RFQS.forEach(sample => {
+    const btn = document.createElement('button');
+    btn.className = 'btn btn-ghost sample-btn';
+    btn.textContent = sample.name;
+    btn.onclick = () => loadSample(sample);
+    list.appendChild(btn);
+  });
+}
+
+async function loadSample(sample = SAMPLE_RFQS[0], analyzeWithAi = true) {
   try {
-    const res = await fetch('beispiel_rfq.txt');
+    if (sampleExists(sample)) {
+      const existing = docs.find(d => d.sampleFile === sample.file || d.name === sample.name);
+      setActiveDoc(existing.id);
+      showToast(`${sample.name} ist bereits geladen`);
+      return false;
+    }
+    const res = await fetch(sample.file);
+    if (!res.ok) throw new Error('Sample nicht gefunden');
     const text = await res.text();
-    const id = 'sample-' + Date.now();
-    docs.push({ id, name: 'beispiel_rfq.txt', content: text });
+    const id = 'sample-' + Date.now() + '-' + Math.random().toString(16).slice(2);
+    docs.push({ id, name: sample.name, sampleFile: sample.file, content: text, chat: [], history: [], summary: extractLocalSummary(text) });
     saveDocsToStorage();
     renderDocs();
     setActiveDoc(id);
-    showToast('Beispiel geladen! ✨');
-  } catch(e) {}
+    if (analyzeWithAi) runAutoAnalysis(text);
+    showToast(`${sample.name} geladen!`);
+    return true;
+  } catch(e) { showToast('Test-RFQ konnte nicht geladen werden', 'error'); return false; }
+}
+
+async function loadAllSamples() {
+  let loaded = 0;
+  let skipped = 0;
+  for (const sample of SAMPLE_RFQS) {
+    const didLoad = await loadSample(sample, false);
+    if (didLoad) loaded++;
+    else skipped++;
+  }
+  showToast(loaded ? `${loaded} Test-RFQs geladen` : 'Alle Test-RFQs waren bereits geladen');
 }
 function sendFromInput() {
   const el = document.getElementById('textInput');
