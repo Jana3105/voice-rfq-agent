@@ -327,9 +327,9 @@
       </div>
     </div>
     <div class="sidebar-section">
-      <div class="sidebar-label">ELEVENLABS (High-End TTS)</div>
-      <input type="password" class="inp" id="elKeyInput" placeholder="ElevenLabs API Key (optional)" onchange="saveElKey()" />
-      <div style="font-size:0.6rem; color:var(--text-muted); margin-top:8px">Für absolut menschliche Stimmen (NotebookLM-Stil).</div>
+      <div class="sidebar-label">GOOGLE CLOUD (1 Mio. gratis)</div>
+      <input type="password" class="inp" id="gcKeyInput" placeholder="Google Cloud API Key (optional)" onchange="saveGcKey()" />
+      <div style="font-size:0.6rem; color:var(--text-muted); margin-top:8px">Alternative zu ElevenLabs. 1 Mio. Zeichen/Monat kostenlos.</div>
     </div>
     <div class="sidebar-section">
       <div class="sidebar-label">API ZUGANG <span onclick="openModal()" style="cursor:pointer">❓</span></div>
@@ -426,8 +426,7 @@
 </div>
 
 <div class="toast" id="toast"></div>
-<div style="position:fixed; bottom:10px; right:10px; font-size:0.6rem; color:var(--text-muted); pointer-events:none">v2.7 (Ultimate Edition)</div>
-
+<div style="position:fixed; bottom:10px; right:10px; font-size:0.6rem; color:var(--text-muted); pointer-events:none">v2.8 (Freedom Edition)</div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 <script>
@@ -448,7 +447,7 @@ let isDark = localStorage.getItem('vrfq_dark') === 'true';
 
 let voices = [];
 
-let elKey = localStorage.getItem('vrfq_el_key') || '';
+let gcKey = localStorage.getItem('vrfq_gc_key') || '';
 
 (function init() {
   if (isDark) document.body.classList.add('dark');
@@ -456,7 +455,7 @@ let elKey = localStorage.getItem('vrfq_el_key') || '';
 
   if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
   if (apiKey) document.getElementById('apiKeyInput').value = apiKey;
-  if (elKey) document.getElementById('elKeyInput').value = elKey;
+  if (gcKey) document.getElementById('gcKeyInput').value = gcKey;
   
   // Lade Ollama Einstellungen
   const savedHost = localStorage.getItem('vrfq_ollama_host');
@@ -929,23 +928,77 @@ function toggleWakeWord() {
   }
 }
 
-function speakText(t) {
+async function speakText(t) {
+  let text = t.replace(/[*#]/g, '').trim();
+
+  if (gcKey && gcKey.length > 10) {
+    try {
+      isSpeaking = true;
+      const res = await fetch(`https://texttospeech.googleapis.com/v1/text:synthesize?key=${gcKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          input: { text: text },
+          voice: { languageCode: 'de-DE', name: 'de-DE-Neural2-F' },
+          audioConfig: { audioEncoding: 'MP3', speakingRate: parseFloat(document.getElementById('rateRange').value) || 1.0 }
+        })
+      });
+      const data = await res.json();
+      if (data.audioContent) {
+        const audio = new Audio("data:audio/mp3;base64," + data.audioContent);
+        audio.onended = () => { isSpeaking = false; };
+        audio.play();
+        return;
+      }
+    } catch(e) { console.error('GC TTS failed, falling back to system'); }
+  }
+
   if (!window.speechSynthesis) return;
   window.speechSynthesis.cancel();
   isSpeaking = true;
-  let text = t.replace(/[*#]/g, '').trim();
+  
+  const chunks = text.match(/[^.!?;\n]+[.!?;\n]+/g) || [text];
   const selectedVoiceIndex = document.getElementById('voiceSelect').value;
   const voice = voices[selectedVoiceIndex];
   const rate = parseFloat(document.getElementById('rateRange').value) || 0.95;
 
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = 'de-DE';
-  utterance.rate = rate;
-  utterance.pitch = 1.0;
-  if (voice) utterance.voice = voice;
-  utterance.onend = () => { isSpeaking = false; };
-  utterance.onerror = () => { isSpeaking = false; };
-  window.speechSynthesis.speak(utterance);
+  let currentChunk = 0;
+
+  function speakNextChunk() {
+    if (currentChunk >= chunks.length || !isSpeaking) {
+      isSpeaking = false;
+      return;
+    }
+
+    const chunkText = chunks[currentChunk].trim();
+    if (!chunkText) {
+      currentChunk++;
+      speakNextChunk();
+      return;
+    }
+
+    const utterance = new SpeechSynthesisUtterance(chunkText);
+    utterance.lang = 'de-DE';
+    
+    // Minimales "Breathing" (Tempo-Variation je nach Satzlänge)
+    const lengthFactor = chunkText.length > 50 ? 1.05 : 0.95;
+    utterance.rate = rate * lengthFactor;
+    
+    utterance.pitch = 1.0;
+    if (voice) utterance.voice = voice;
+    
+    utterance.onend = () => {
+      currentChunk++;
+      // Dynamische Pause: Punkt = länger (400ms), Komma = kürzer (150ms)
+      const isEnd = /[.!?\n]$/.test(chunkText);
+      setTimeout(speakNextChunk, isEnd ? 400 : 150);
+    };
+    
+    utterance.onerror = () => { isSpeaking = false; };
+    window.speechSynthesis.speak(utterance);
+  }
+
+  speakNextChunk();
 }
 
 function readActiveDoc() {
