@@ -353,9 +353,12 @@
     <div class="sidebar-section">
       <div class="sidebar-label">NOTIZEN / HIGHLIGHTS</div>
       <div id="notesContainer" style="font-size:0.8rem; color:var(--text-muted); background:var(--surface2); padding:12px; border-radius:12px; min-height:60px; margin-bottom:12px">Noch keine Notizen...</div>
-      <div style="display:flex; gap:8px">
-        <button class="btn btn-ghost" onclick="sendText('Notiere: ' + prompt('Notiz eingeben:'))" style="flex:1; font-size:0.7rem">➕</button>
-        <button class="btn btn-ghost" onclick="clearNotes()" style="font-size:0.7rem">🗑️ Alle</button>
+      <div style="display:flex; flex-direction:column; gap:8px">
+        <div style="display:flex; gap:8px">
+          <button class="btn btn-ghost" onclick="sendText('Notiere: ' + prompt('Notiz eingeben:'))" style="flex:1; font-size:0.7rem">➕</button>
+          <button class="btn btn-ghost" onclick="clearNotes()" style="font-size:0.7rem">🗑️</button>
+        </div>
+        <button class="btn btn-primary" onclick="exportReport()" style="width:100%; justify-content:center; font-size:0.75rem">📄 Bericht exportieren (MD)</button>
       </div>
     </div>
     <div class="sidebar-section">
@@ -408,7 +411,8 @@
 </div>
 
 <div class="toast" id="toast"></div>
-<div style="position:fixed; bottom:10px; right:10px; font-size:0.6rem; color:var(--text-muted); pointer-events:none">v2.4 (Strategic Advisor)</div>
+<div style="position:fixed; bottom:10px; right:10px; font-size:0.6rem; color:var(--text-muted); pointer-events:none">v2.5 (Auditor Edition)</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 <script>
@@ -509,7 +513,12 @@ function saveDocsToStorage() {
 
 function saveNote(txt) {
   let notes = JSON.parse(localStorage.getItem('vrfq_notes') || '[]');
-  notes.push({ t: Date.now(), text: txt });
+  const activeDoc = docs.find(d => d.id == activeDocId);
+  notes.push({ 
+    t: new Date().toLocaleString('de-DE'), 
+    text: txt, 
+    doc: activeDoc ? activeDoc.name : 'Allgemein' 
+  });
   localStorage.setItem('vrfq_notes', JSON.stringify(notes));
   updateNotesDisplay();
 }
@@ -526,8 +535,41 @@ function updateNotesDisplay() {
   if (!container) return;
   let notes = JSON.parse(localStorage.getItem('vrfq_notes') || '[]');
   if (notes.length === 0) { container.innerHTML = 'Noch keine Notizen...'; return; }
-  // Zeige die letzten 5 Notizen
-  container.innerHTML = notes.slice(-5).reverse().map(n => `<div style="margin-bottom:8px; padding-bottom:4px; border-bottom:1px solid var(--border); font-size:0.75rem">• ${n.text}</div>`).join('');
+  container.innerHTML = notes.slice(-5).reverse().map(n => `
+    <div style="margin-bottom:8px; padding-bottom:4px; border-bottom:1px solid var(--border); font-size:0.7rem">
+      <div style="font-weight:700; font-size:0.6rem; color:var(--accent)">${n.doc}</div>
+      • ${n.text}
+    </div>
+  `).join('');
+}
+
+function exportReport() {
+  let notes = JSON.parse(localStorage.getItem('vrfq_notes') || '[]');
+  if (notes.length === 0) { showToast('Keine Notizen zum Exportieren!', 'error'); return; }
+  
+  let md = `# RFQ Analyse-Bericht\nErstellt am: ${new Date().toLocaleString('de-DE')}\n\n`;
+  
+  // Gruppieren nach Dokumenten
+  const grouped = notes.reduce((acc, n) => {
+    if (!acc[n.doc]) acc[n.doc] = [];
+    acc[n.doc].push(n);
+    return acc;
+  }, {});
+  
+  for (const doc in grouped) {
+    md += `## 📄 Dokument: ${doc}\n`;
+    grouped[doc].forEach(n => {
+      md += `- [${n.t}] ${n.text}\n`;
+    });
+    md += `\n`;
+  }
+  
+  const blob = new Blob([md], {type: 'text/markdown'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `RFQ_Bericht_${Date.now()}.md`;
+  a.click();
+  showToast('Bericht wurde heruntergeladen! 📄');
 }
 
 // ══════════════════════════════════════════════════════════════
