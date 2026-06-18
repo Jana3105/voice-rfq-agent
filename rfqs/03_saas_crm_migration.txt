@@ -1,0 +1,1 @@
+Migration eines Legacy-CRM-Systems in die Cloud. Gefordert wird eine API-First-Architektur, Datenschutz nach DSGVO und eine Uptime-Garantie von 99,99%.
